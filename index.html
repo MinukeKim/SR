@@ -45,9 +45,10 @@
             100% { border-color: #f97316; box-shadow: 0 0 20px rgba(249, 115, 22, 0.6); }
         }
 
+        /* 캔버스 렌더러 CSS 스케일링 (조금 더 꽉 차 보이도록 max-width 상향) */
         .canvas-responsive {
             width: 100%;
-            max-width: 320px;
+            max-width: 360px;
             height: auto;
             aspect-ratio: 1 / 1;
         }
@@ -82,7 +83,6 @@
         <!-- LEFT PANEL: Character Canvas -->
         <div class="lg:col-span-5 flex flex-col items-center justify-start space-y-6 p-2">
             
-            <!-- 중복되던 캐릭터 타이틀 제거 및 깔끔한 렌더러 영역 -->
             <div class="relative flex items-center justify-center w-full">
                 <canvas id="tutorCanvas" width="400" height="400" class="bg-white comic-border soft-shadow canvas-responsive transition-all duration-300"></canvas>
             </div>
@@ -150,12 +150,26 @@
         const canvasEl = document.getElementById('tutorCanvas');
 
         /* =========================================================
-           렌더러 엔진 (로컬 스토리지 연동 추가)
+           렌더러 엔진 (로컬 스토리지 연동 제거 및 제공된 설정값 고정)
            ========================================================= */
         const renderer = {
             config: {
-                "xena": { "maskType": "circle", "baseScale": 0.13, "baseX": -4, "baseY": 29, "eyeY": 224, "eyeSpacing": 70, "eyeWidth": 13, "eyeHeight": 13, "eyeLineThickness": 1.0, "pupilSize": 24, "pupilLeftOffsetX": 2.5, "pupilLeftOffsetY": 0, "pupilRightOffsetX": -3, "pupilRightOffsetY": 0, "eyebrowY": -36, "eyebrowLength": 21, "eyebrowAngle": -13, "eyebrowThickness": 3.0, "mouthY": 283, "mouthWidth": 33.5, "verticalLineLength": 11, "mouthCurve": 13, "mouthOffsetX": -1.0, "mouthOffsetY": 2.0, "mouthLineThickness": 1.5 },
-                "xeno": { "maskType": "rounded-rect", "baseScale": 0.14, "baseX": 0, "baseY": 15, "eyeY": 195, "eyeSpacing": 64, "eyeWidth": 12, "eyeHeight": 12, "eyeLineThickness": 1.0, "pupilSize": 22, "pupilLeftOffsetX": 1.5, "pupilLeftOffsetY": 0, "pupilRightOffsetX": -1.5, "pupilRightOffsetY": 0, "eyebrowY": -28, "eyebrowLength": 22, "eyebrowAngle": 8, "eyebrowThickness": 3.0, "mouthY": 255, "mouthWidth": 26, "verticalLineLength": 8, "mouthCurve": 10, "mouthOffsetX": 0, "mouthOffsetY": 1.0, "mouthLineThickness": 1.5 }
+                "xena": { 
+                    "maskType": "circle", "baseScale": 0.13, "baseX": -4, "baseY": 29, "eyeY": 224, 
+                    "eyeSpacing": 70, "eyeWidth": 13, "eyeHeight": 13, "eyeLineThickness": 1.0, 
+                    "pupilSize": 24, "pupilLeftOffsetX": 2.5, "pupilLeftOffsetY": 0, "pupilRightOffsetX": -3, 
+                    "pupilRightOffsetY": 0, "eyebrowY": -36, "eyebrowLength": 21, "eyebrowAngle": -13, 
+                    "eyebrowThickness": 3.0, "mouthY": 283, "mouthWidth": 33.5, "verticalLineLength": 11, 
+                    "mouthCurve": 13, "mouthOffsetX": -1.0, "mouthOffsetY": 2.0, "mouthLineThickness": 1.5 
+                },
+                "xeno": { 
+                    "maskType": "rounded-rect", "baseScale": 0.14, "baseX": 0, "baseY": 15, "eyeY": 195, 
+                    "eyeSpacing": 64, "eyeWidth": 12, "eyeHeight": 12, "eyeLineThickness": 1.0, 
+                    "pupilSize": 22, "pupilLeftOffsetX": 1.5, "pupilLeftOffsetY": 0, "pupilRightOffsetX": -1.5, 
+                    "pupilRightOffsetY": 0, "eyebrowY": -28, "eyebrowLength": 22, "eyebrowAngle": 8, 
+                    "eyebrowThickness": 3.0, "mouthY": 255, "mouthWidth": 26, "verticalLineLength": 8, 
+                    "mouthCurve": 10, "mouthOffsetX": 0, "mouthOffsetY": 1.0, "mouthLineThickness": 1.5 
+                }
             },
             simulation: { mouthOpen: 0, blinkState: 0, blinkTimer: 0, isSpeaking: false, vowel: 'A', speakIntervalId: null },
             ctx: null, images: { xena: new Image(), xeno: new Image() }, imageLoaded: { xena: false, xeno: false },
@@ -163,16 +177,6 @@
             init: function() {
                 this.ctx = canvasEl.getContext('2d');
                 
-                // 🔥 핵심: 캘리브레이터에서 맞춘 최종 값을 로컬스토리지에서 덮어씌웁니다!
-                const savedData = localStorage.getItem('ax_lab_v6_config');
-                if (savedData) {
-                    try {
-                        const parsed = JSON.parse(savedData);
-                        if (parsed.xena) this.config.xena = { ...this.config.xena, ...parsed.xena };
-                        if (parsed.xeno) this.config.xeno = { ...this.config.xeno, ...parsed.xeno };
-                    } catch(e) { console.error("Config parsing error"); }
-                }
-
                 this.images.xena.src = "Xena_base.png";
                 this.images.xeno.src = "Xeno_base.png";
                 this.images.xena.onload = () => { this.imageLoaded.xena = true; };
@@ -432,7 +436,7 @@
             recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'ko-KR'; // 하이브리드 감지를 위해 한글 베이스 유지
+            recognition.lang = 'ko-KR';
 
             recognition.onresult = (event) => {
                 if (isTutorSpeaking) return;
