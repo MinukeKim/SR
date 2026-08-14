@@ -82,10 +82,6 @@
             height: auto;
             aspect-ratio: 1 / 1;
         }
-
-        /* 탭 버튼 트랜지션 */
-        .tab-btn { transition: all 0.2s ease; border-bottom: 3px solid transparent; opacity: 0.6; }
-        .tab-btn.active { border-bottom: 3px solid #3b82f6; opacity: 1; color: #1e293b; font-weight: 800; }
         
         .modal-enter { opacity: 0; transform: scale(0.95); }
         .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -155,12 +151,10 @@
         <div class="lg:col-span-7 flex flex-col space-y-6">
             <div class="flex-1 bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col min-h-[520px] relative overflow-hidden">
                 
-                <!-- 상단: 탭(핵심 코어 모드) 및 언어 상태 표시 -->
+                <!-- 상단: 단순화된 타이틀 및 언어 상태 표시 -->
                 <div class="flex justify-between items-end border-b border-slate-100 pb-3 mb-6">
-                    <div class="flex space-x-4 px-2">
-                        <button onclick="switchTab('echo')" id="tab-echo" class="tab-btn active text-sm font-bold text-slate-500 pb-1">1. 나 따라하기</button>
-                        <button onclick="switchTab('reading')" id="tab-reading" class="tab-btn text-sm font-bold text-slate-500 pb-1">2. 너 따라 읽기</button>
-                        <button onclick="switchTab('ai')" id="tab-ai" class="tab-btn text-sm font-bold text-slate-500 pb-1 flex items-center gap-1">3. AI 대화 <span class="text-[10px] bg-blue-100 text-blue-600 px-1.5 rounded uppercase font-black">Pro</span></button>
+                    <div class="px-2">
+                        <h2 class="text-lg font-black text-slate-700 font-['Fredoka_One'] tracking-wide">AI Free Talk</h2>
                     </div>
                     <div class="flex space-x-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
                         <button id="lang-en" onclick="setLanguageMode('en')" class="px-3 py-1.5 text-[11px] font-black bg-slate-800 text-white rounded-lg shadow-sm transition uppercase tracking-wide">Eng</button>
@@ -207,10 +201,13 @@
            ========================================================= */
         let currentLang = 'en-US'; 
         let currentChar = 'xeno';
-        let currentTab = 'echo'; 
         let masterVolume = 1;
         let isTutorSpeaking = false;
         let hasInitialized = false;
+        
+        // API 중복 호출 방어(디바운스 및 잠금)를 위한 변수
+        let apiTimer = null;
+        let isFetching = false;
 
         const tutorBubble = document.getElementById('tutor-bubble');
         const tutorLabel = document.getElementById('tutor-label');
@@ -219,7 +216,7 @@
         const micGauge = document.getElementById('mic-gauge');
         const canvasEl = document.getElementById('tutorCanvas');
         const apiKeyInput = document.getElementById('api-key-input');
-        const volSlider = document.getElementById('master-vol'); // 볼륨 슬라이더 참조
+        const volSlider = document.getElementById('master-vol'); 
 
         /* =========================================================
            2. 완벽하게 보존된 하이브리드 렌더러 엔진
@@ -438,7 +435,7 @@
             if (key) {
                 localStorage.setItem('saved_gemini_api_key', key);
                 toggleApiModal(false);
-                speakText("API Key가 기기에 안전하게 저장되었습니다! ✅");
+                speakText(currentLang === 'en-US' ? "API Key saved safely! ✅" : "API Key가 기기에 안전하게 저장되었습니다! ✅");
             }
         }
 
@@ -469,40 +466,27 @@
                 document.documentElement.style.setProperty('--bg-xeno', '#fff7ed');
                 document.getElementById('body-bg').style.backgroundColor = 'var(--bg-xeno)';
                 tutorLabel.innerText = "XENO (TUTOR)";
-                speakText("안녕! 나는 제노야. 함께 공부하자!");
+                
+                const text = currentLang === 'en-US' 
+                    ? "Hello! I'm Xeno. Let's study together!" 
+                    : "안녕! 나는 제노야. 함께 공부하자!";
+                speakText(text);
             } else {
                 document.getElementById('char-xena').className = "flex-1 py-2.5 text-sm font-black bg-blue-500 text-white rounded-xl shadow-sm transition";
                 document.documentElement.style.setProperty('--bg-xena', '#f0f9ff');
                 document.getElementById('body-bg').style.backgroundColor = 'var(--bg-xena)';
                 tutorLabel.innerText = "XENA (TUTOR)";
-                speakText("안녕! 나는 제나야. 시작할 준비 됐니?");
+                
+                const text = currentLang === 'en-US' 
+                    ? "Hi! I'm Xena. Are you ready to start?" 
+                    : "안녕! 나는 제나야. 시작할 준비 됐니?";
+                speakText(text);
             }
             renderer.applyMasking(char);
         }
 
         function updateVolume(val) {
             masterVolume = parseFloat(val);
-            // TTS 중 볼륨 0 캔슬 방어 로직 삭제 (슬라이더가 비활성화 되므로)
-        }
-
-        function switchTab(tabName) {
-            if (recognition) recognition.stop();
-            isTutorSpeaking = false;
-            renderer.stopSpeakingAnim();
-            speechSynthesis.cancel();
-            volSlider.disabled = false;
-            
-            currentTab = tabName;
-            ['echo', 'reading', 'ai'].forEach(t => document.getElementById(`tab-${t}`).classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-
-            if (tabName === 'echo') {
-                speakText("나 따라하기 모드입니다. 제가 말한 것을 똑같이 따라해보세요.");
-            } else if (tabName === 'reading') {
-                speakText("자유롭게 글을 읽어주세요. 발음을 확인해 드릴게요.");
-            } else if (tabName === 'ai') {
-                speakText("AI 대화 모드입니다. 자유롭게 질문해보세요!");
-            }
         }
 
         /* =========================================================
@@ -557,20 +541,27 @@
         }
 
         /* =========================================================
-           5. Gemini API 다이렉트 통신 파이프라인
+           5. Gemini API 다이렉트 통신 파이프라인 (Rate Limit & 잠금 추가)
            ========================================================= */
         async function fetchGeminiResponse(promptText) {
             const apiKey = localStorage.getItem('saved_gemini_api_key');
+            
+            // 키가 없는 상태에서 사용자가 말을 한 경우
             if (!apiKey) {
-                speakText("Please click the 🔑 button in the top right to register your Gemini API Key first! 😊");
+                const msg = currentLang === 'en-US' 
+                    ? "Please register your API key first to talk to me!" 
+                    : "저와 대화하려면 먼저 API 키를 등록해주세요!";
+                speakText(msg);
                 return;
             }
 
+            if (isFetching) return; // 이중 호출 원천 차단
+            isFetching = true;      // 통신 시작 (자물쇠 잠금)
             isTutorSpeaking = true; 
             if(recognition) recognition.stop();
             
             tutorBubble.innerText = "🤔 생각 중...";
-            tutorBubble.className = 'font-bold p-5 rounded-3xl rounded-tl-none border-2 text-[15px] leading-relaxed transition-all thinking-bubble';
+            tutorBubble.className = 'font-bold p-5 rounded-3xl rounded-tl-none border border-yellow-300 text-[15px] leading-relaxed transition-all thinking-bubble';
             
             try {
                 const charName = currentChar === 'xeno' ? 'Xeno (a cute fox)' : 'Xena (a friendly polar bear)';
@@ -584,19 +575,40 @@
                     })
                 });
                 
+                // 429 에러(호출 한도 초과) 명시적 처리
+                if (!response.ok) {
+                    if (response.status === 429) throw new Error("RATE_LIMIT");
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 if(data.error) throw new Error(data.error.message);
                 
                 const replyText = data.candidates[0].content.parts[0].text.replace(/\*/g, '').trim(); 
                 speakText(replyText);
+                
             } catch (err) {
                 console.error("Gemini API Error:", err); 
-                speakText("네트워크 오류가 발생했습니다. API 키를 다시 확인해주세요.");
+                
+                // 에러 원인에 따른 안내 멘트 분기
+                if (err.message === "RATE_LIMIT") {
+                    const msg = currentLang === 'en-US'
+                        ? "I'm receiving too many requests. Let's take a quick 1-minute break!"
+                        : "1분당 대화 횟수를 초과했어요. 1분만 쉬었다가 다시 말해주세요!";
+                    speakText(msg);
+                } else {
+                    const msg = currentLang === 'en-US'
+                        ? "Network error. Please check your API key."
+                        : "연결 오류가 발생했어요. API 키가 정확한지 확인해주세요.";
+                    speakText(msg);
+                }
+            } finally {
+                isFetching = false; // 성공하든 실패하든 통신이 끝나면 자물쇠 풀기
             }
         }
 
         /* =========================================================
-           6. 무결점 하이브리드 Web Speech STT 루프
+           6. 무결점 하이브리드 Web Speech STT 루프 (Debounce 처리)
            ========================================================= */
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
@@ -634,13 +646,14 @@
                     accuracyText.style.display = 'block';
                     accuracyText.innerText = `Accuracy: ${Math.round(conf * 100)}%`;
 
-                    if (currentTab === 'echo') {
-                        speakText(final);
-                    } else if (currentTab === 'reading') {
-                        speakText("아주 잘 읽으셨어요!");
-                    } else if (currentTab === 'ai') {
-                        fetchGeminiResponse(final);
-                    }
+                    // 통신 중복 방어 로직 (디바운스 & 잠금 확인)
+                    if (isFetching) return;
+                    clearTimeout(apiTimer); // 기존 타이머 초기화
+                    
+                    apiTimer = setTimeout(() => {
+                        fetchGeminiResponse(final); // 1.5초 동안 말이 더 없으면 1번만 호출
+                    }, 1500);
+
                 } else {
                     userText.innerText = interim;
                 }
@@ -694,7 +707,11 @@
             }
 
             setTimeout(() => {
-                speakText("안녕하세요! 저는 제노입니다. 함께 공부할까요?");
+                // 첫 인삿말 언어 설정에 따라 분기
+                const greeting = currentLang === 'en-US' 
+                    ? "Hello! I am Xeno. Shall we study together?" 
+                    : "안녕하세요! 저는 제노입니다. 함께 공부할까요?";
+                speakText(greeting);
             }, 300);
         }
 
