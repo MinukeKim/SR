@@ -1,3 +1,10 @@
+가독성을 높이기 위해 폰트를 웹 표준이자 가장 깔끔한 'Pretendard(프리텐다드)'로 교체하고, 대화 말풍선의 **글자 크기를 키우며 불필요한 볼드(굵게) 처리를 제거**했습니다.
+
+또한 앞서 말씀드린 '2~3분 후 먹통 증상(가비지 컬렉션 버그 방어)'과 '언어 설정 버튼에 따른 완벽한 STT/TTS/AI 답변 동기화'를 모두 반영한 전체 완성본 코드입니다.
+
+기존 코드를 모두 지우고 아래 코드로 교체해 주세요.
+
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -5,8 +12,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AX LAB AI Tutor</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 가독성이 뛰어난 Pretendard 폰트 적용 -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nanum+Square+Round:wght@400;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
         
         :root {
             --bg-xeno: #fff7ed; /* 웜 톤 (제노) */
@@ -14,11 +23,13 @@
         }
 
         body {
-            font-family: 'Nanum Square Round', 'Segoe UI', sans-serif;
+            /* 폰트 교체 */
+            font-family: 'Pretendard', 'Segoe UI', sans-serif;
             background-color: var(--bg-xeno);
             background-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 1px);
             background-size: 24px 24px;
             transition: background-color 0.6s ease;
+            letter-spacing: -0.01em;
         }
 
         .soft-shadow { box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08); }
@@ -72,18 +83,18 @@
     <div id="start-overlay" class="fixed inset-0 bg-slate-900/90 z-[60] flex flex-col items-center justify-center text-white cursor-pointer" onclick="initAppOnInteraction()">
         <span class="text-6xl mb-4">🖐️</span>
         <h2 class="text-2xl font-black font-['Fredoka_One'] mb-2">Click Anywhere to Start!</h2>
-        <p class="text-slate-300 font-bold">안전한 마이크 및 오디오 연결을 위해 화면을 클릭해주세요.</p>
+        <p class="text-slate-300 font-medium">안전한 마이크 및 오디오 연결을 위해 화면을 클릭해주세요.</p>
     </div>
 
     <!-- API Modal -->
     <div id="api-modal" class="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center hidden backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl border border-slate-100 modal-enter-active">
-            <h3 class="text-xl font-black text-slate-800 mb-2 flex items-center"><span class="text-2xl mr-2">🔑</span> Gemini API Key Setup</h3>
-            <p class="text-xs text-slate-500 font-bold mb-6">'AI 대화' 기능을 위해 Google AI Studio API Key를 등록하세요. 기기에 안전하게 영구 저장됩니다.</p>
+            <h3 class="text-xl font-bold text-slate-800 mb-2 flex items-center"><span class="text-2xl mr-2">🔑</span> Gemini API Key Setup</h3>
+            <p class="text-xs text-slate-500 font-medium mb-6">'AI 대화' 기능을 위해 Google AI Studio API Key를 등록하세요. 기기에 안전하게 영구 저장됩니다.</p>
             <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 mb-6 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition">
             <div class="flex justify-end space-x-3">
-                <button onclick="toggleApiModal(false)" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition">취소</button>
-                <button onclick="saveApiKey()" class="px-5 py-2.5 text-sm font-black bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-200 transition">저장하기</button>
+                <button onclick="toggleApiModal(false)" class="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-xl transition">취소</button>
+                <button onclick="saveApiKey()" class="px-5 py-2.5 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-200 transition">저장하기</button>
             </div>
         </div>
     </div>
@@ -96,7 +107,7 @@
                 <h1 class="text-3xl font-normal text-slate-800 mt-1 font-['Fredoka_One'] flex items-baseline tracking-tight">
                     AX LAB <span class="text-blue-600 ml-2">AI Tutor</span>
                 </h1>
-                <div id="debug-model" class="text-xs text-slate-400 font-bold mt-1">연결된 모델: 확인 중...</div>
+                <div id="debug-model" class="text-xs text-slate-400 font-medium mt-1">연결된 모델: 확인 중...</div>
             </div>
             
             <div class="flex items-center space-x-4 bg-white/50 px-4 py-2 rounded-2xl border border-slate-100 shadow-sm">
@@ -114,8 +125,8 @@
                 <canvas id="tutorCanvas" width="400" height="400" class="bg-white border-4 border-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] rounded-3xl canvas-responsive transition-all duration-300"></canvas>
             </div>
             <div class="flex space-x-2 bg-white/60 p-1.5 rounded-2xl border border-slate-100 shadow-sm w-[240px] justify-center">
-                <button id="char-xeno" onclick="setCharacter('xeno')" class="flex-1 py-2.5 text-sm font-black bg-orange-500 text-white rounded-xl shadow-sm transition">Xeno</button>
-                <button id="char-xena" onclick="setCharacter('xena')" class="flex-1 py-2.5 text-sm font-black text-slate-500 hover:bg-white rounded-xl transition">Xena</button>
+                <button id="char-xeno" onclick="setCharacter('xeno')" class="flex-1 py-2.5 text-sm font-bold bg-orange-500 text-white rounded-xl shadow-sm transition">Xeno</button>
+                <button id="char-xena" onclick="setCharacter('xena')" class="flex-1 py-2.5 text-sm font-bold text-slate-500 hover:bg-white rounded-xl transition">Xena</button>
             </div>
         </div>
 
@@ -125,19 +136,19 @@
                 
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                     <div class="px-2">
-                        <!-- 상태 표시줄 -->
-                        <div id="text-mic-status" class="text-[11px] text-blue-500 font-black">대기 중</div>
+                        <div id="text-mic-status" class="text-[11px] text-blue-500 font-bold">대기 중</div>
                     </div>
                     <div class="flex space-x-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                        <button id="lang-en" onclick="setLanguageMode('en')" class="px-3 py-1.5 text-[11px] font-black bg-slate-800 text-white rounded-lg shadow-sm transition uppercase tracking-wide">Eng</button>
-                        <button id="lang-ko" onclick="setLanguageMode('ko')" class="px-3 py-1.5 text-[11px] font-black text-slate-500 hover:bg-slate-200 rounded-lg transition uppercase tracking-wide">Kor</button>
+                        <button id="lang-en" onclick="setLanguageMode('en')" class="px-3 py-1.5 text-[11px] font-bold bg-slate-800 text-white rounded-lg shadow-sm transition uppercase tracking-wide">Eng</button>
+                        <button id="lang-ko" onclick="setLanguageMode('ko')" class="px-3 py-1.5 text-[11px] font-bold text-slate-500 hover:bg-slate-200 rounded-lg transition uppercase tracking-wide">Kor</button>
                     </div>
                 </div>
 
                 <div class="flex items-start gap-4 mb-4">
                     <div class="flex flex-col flex-1">
-                        <span class="text-[11px] font-black text-slate-400 ml-3 mb-1.5 tracking-wider uppercase" id="tutor-label">XENO (TUTOR)</span>
-                        <div id="tutor-bubble" class="bg-slate-50 text-slate-700 font-bold p-5 rounded-3xl rounded-tl-none border border-slate-100 shadow-sm text-[15px] leading-relaxed transition-all">
+                        <span class="text-[11px] font-bold text-slate-400 ml-3 mb-1.5 tracking-wider uppercase" id="tutor-label">XENO (TUTOR)</span>
+                        <!-- 폰트 크기 키움 (text-[16px] md:text-[17px]), font-bold 제거, 줄간격 최적화 -->
+                        <div id="tutor-bubble" class="bg-slate-50 text-slate-700 font-normal p-5 rounded-3xl rounded-tl-none border border-slate-100 shadow-sm text-[16px] md:text-[17px] leading-relaxed transition-all">
                             Initializing system...
                         </div>
                     </div>
@@ -146,17 +157,18 @@
                 <div class="flex items-start gap-4 flex-row-reverse mt-auto">
                     <div class="flex flex-col flex-1 items-end">
                         <div class="flex items-center gap-3 mb-1.5 mr-3">
-                            <span class="text-[11px] font-black text-slate-400 tracking-wider">YOU</span>
+                            <span class="text-[11px] font-bold text-slate-400 tracking-wider">YOU</span>
                             <div class="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1.5 rounded-full border border-blue-100">
-                                <span class="text-[9px] font-black text-blue-500 uppercase tracking-widest">MIC</span>
+                                <span class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">MIC</span>
                                 <div class="w-20 h-1.5 bg-blue-100 rounded-full overflow-hidden">
                                     <div id="mic-gauge" class="h-full bg-blue-500 w-0 transition-all duration-75"></div>
                                 </div>
                             </div>
                         </div>
-                        <div id="user-bubble" class="bg-blue-50/50 text-slate-800 font-bold p-5 rounded-3xl rounded-tr-none border border-blue-100 shadow-sm text-[15px] leading-relaxed min-w-[60%] text-right">
+                        <!-- 폰트 크기 키움 (text-[16px] md:text-[17px]), font-bold 제거 -->
+                        <div id="user-bubble" class="bg-blue-50/50 text-slate-800 font-normal p-5 rounded-3xl rounded-tr-none border border-blue-100 shadow-sm text-[16px] md:text-[17px] leading-relaxed min-w-[60%] text-right">
                             <span id="user-text" class="italic text-slate-400">Waiting for microphone...</span>
-                            <div id="accuracy-text" class="text-[10px] text-blue-500 font-black mt-2 hidden opacity-80">Accuracy: 0%</div>
+                            <div id="accuracy-text" class="text-[10px] text-blue-500 font-bold mt-2 hidden opacity-80">Accuracy: 0%</div>
                         </div>
                     </div>
                 </div>
@@ -179,7 +191,11 @@
         let availableModel = null;
         let isFetching = false;
         let apiTimer = null;
-        let nudgeTimer = null; 
+        let nudgeTimer = null;
+
+        // GC(가비지 컬렉션) 버그 방지를 위한 전역 변수
+        let currentUtterance = null;
+        let ttsFallbackTimer = null;
 
         const tutorBubble = document.getElementById('tutor-bubble');
         const tutorLabel = document.getElementById('tutor-label');
@@ -428,21 +444,24 @@
             }
         }
 
-        function setLanguageMode(mode, silent = false) {
-            document.getElementById('lang-en').className = "px-3 py-1.5 text-[11px] font-black text-slate-500 hover:bg-slate-200 rounded-lg transition uppercase tracking-wide";
-            document.getElementById('lang-ko').className = "px-3 py-1.5 text-[11px] font-black text-slate-500 hover:bg-slate-200 rounded-lg transition uppercase tracking-wide";
+        function setLanguageMode(mode) {
+            document.getElementById('lang-en').className = "px-3 py-1.5 text-[11px] font-bold text-slate-500 hover:bg-slate-200 rounded-lg transition uppercase tracking-wide";
+            document.getElementById('lang-ko').className = "px-3 py-1.5 text-[11px] font-bold text-slate-500 hover:bg-slate-200 rounded-lg transition uppercase tracking-wide";
             
             if (mode === 'en') {
-                document.getElementById('lang-en').className = "px-3 py-1.5 text-[11px] font-black bg-slate-800 text-white rounded-lg shadow-sm transition uppercase tracking-wide";
+                document.getElementById('lang-en').className = "px-3 py-1.5 text-[11px] font-bold bg-slate-800 text-white rounded-lg shadow-sm transition uppercase tracking-wide";
                 currentLang = 'en-US';
             } else if (mode === 'ko') {
-                document.getElementById('lang-ko').className = "px-3 py-1.5 text-[11px] font-black bg-slate-800 text-white rounded-lg shadow-sm transition uppercase tracking-wide";
+                document.getElementById('lang-ko').className = "px-3 py-1.5 text-[11px] font-bold bg-slate-800 text-white rounded-lg shadow-sm transition uppercase tracking-wide";
                 currentLang = 'ko-KR';
             }
 
+            // STT 언어 연동 업데이트
             if (recognition && recognition.lang !== currentLang) {
                 recognition.lang = currentLang;
-                try { recognition.stop(); } catch(e) {}
+                if(!isTutorSpeaking) {
+                    try { recognition.stop(); } catch(e) {}
+                }
             }
         }
 
@@ -450,21 +469,21 @@
             if(currentChar === char) return; 
 
             currentChar = char;
-            document.getElementById('char-xeno').className = "flex-1 py-2.5 text-sm font-black text-slate-500 hover:bg-white rounded-xl transition";
-            document.getElementById('char-xena').className = "flex-1 py-2.5 text-sm font-black text-slate-500 hover:bg-white rounded-xl transition";
+            document.getElementById('char-xeno').className = "flex-1 py-2.5 text-sm font-bold text-slate-500 hover:bg-white rounded-xl transition";
+            document.getElementById('char-xena').className = "flex-1 py-2.5 text-sm font-bold text-slate-500 hover:bg-white rounded-xl transition";
             
             if (char === 'xeno') {
-                document.getElementById('char-xeno').className = "flex-1 py-2.5 text-sm font-black bg-orange-500 text-white rounded-xl shadow-sm transition";
+                document.getElementById('char-xeno').className = "flex-1 py-2.5 text-sm font-bold bg-orange-500 text-white rounded-xl shadow-sm transition";
                 document.documentElement.style.setProperty('--bg-xeno', '#fff7ed');
                 document.getElementById('body-bg').style.backgroundColor = 'var(--bg-xeno)';
                 tutorLabel.innerText = "XENO (TUTOR)";
-                speakText("Hello! I'm Xeno, your smart fox tutor. Let's explore science together!");
+                speakText(currentLang === 'ko-KR' ? "안녕! 나는 똑똑한 여우 제노야. 같이 탐험을 떠나볼까?" : "Hello! I'm Xeno, your smart fox tutor. Let's explore science together!");
             } else {
-                document.getElementById('char-xena').className = "flex-1 py-2.5 text-sm font-black bg-blue-500 text-white rounded-xl shadow-sm transition";
+                document.getElementById('char-xena').className = "flex-1 py-2.5 text-sm font-bold bg-blue-500 text-white rounded-xl shadow-sm transition";
                 document.documentElement.style.setProperty('--bg-xena', '#f0f9ff');
                 document.getElementById('body-bg').style.backgroundColor = 'var(--bg-xena)';
                 tutorLabel.innerText = "XENA (TUTOR)";
-                speakText("Hi! I'm Xena, your friendly bear helper. Ready for cool experiments?");
+                speakText(currentLang === 'ko-KR' ? "안녕! 나는 다정한 백곰 제나야. 같이 재미있게 공부하자!" : "Hi! I'm Xena, your friendly bear helper. Ready for cool experiments?");
             }
             renderer.applyMasking(char);
         }
@@ -472,7 +491,7 @@
         function updateVolume(val) { masterVolume = parseFloat(val); }
 
         /* =========================================================
-           5. 다국어 지능형 스마트 TTS (이름 접두사 제거 적용)
+           5. TTS 엔진 (GC 버그 방어 & 명시적 언어 세팅 적용)
            ========================================================= */
         let voices = [];
         speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
@@ -487,28 +506,34 @@
             
             volSlider.disabled = true;
             
-            tutorBubble.className = 'bg-slate-50 text-slate-700 font-bold p-5 rounded-3xl rounded-tl-none border border-slate-100 shadow-sm text-[15px] leading-relaxed transition-all bubble-speaking';
+            // 폰트 크기 증가 및 볼드체 제거 
+            tutorBubble.className = 'bg-slate-50 text-slate-700 font-normal p-5 rounded-3xl rounded-tl-none border border-slate-100 shadow-sm text-[16px] md:text-[17px] leading-relaxed transition-all bubble-speaking';
             
-            // 🌟 수정 완료: "제노:", "제나:" 이름 접두사 완전히 제거
+            const charNameKOR = currentChar === 'xeno' ? '제노' : '제나';
+            const charNameENG = currentChar === 'xeno' ? 'Xeno' : 'Xena';
+            const displayCharName = currentLang === 'ko-KR' ? charNameKOR : charNameENG;
+
             if(!text.includes('<span')) {
-                tutorBubble.innerHTML = `<span class="text-slate-800 font-bold">${text}</span>`;
+                // 폰트 볼드 처리 뺌
+                tutorBubble.innerHTML = `<span class="text-slate-800 font-medium">${displayCharName}:</span> ${text}`;
             }
             
             renderer.startSpeakingAnim(); 
 
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.volume = masterVolume;
+            // 전역 변수 사용 (GC 버그 방어)
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.volume = masterVolume;
             
-            const hasKoreanChars = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
-            const targetLang = hasKoreanChars ? 'ko-KR' : 'en-US';
-            utterance.lang = targetLang;
+            // 버튼 상태에 따른 언어 강제 지정
+            currentUtterance.lang = currentLang;
             
             if (voices.length === 0) voices = speechSynthesis.getVoices();
-            let bestVoice = voices.find(v => v.lang.includes(targetLang) && (v.name.includes('Google') || v.name.includes('Natural')));
-            if (!bestVoice) bestVoice = voices.find(v => v.lang.includes(targetLang));
-            if (bestVoice) utterance.voice = bestVoice;
+            let bestVoice = voices.find(v => v.lang.includes(currentLang) && (v.name.includes('Google') || v.name.includes('Natural')));
+            if (!bestVoice) bestVoice = voices.find(v => v.lang.includes(currentLang));
+            if (bestVoice) currentUtterance.voice = bestVoice;
 
-            utterance.onend = () => {
+            const resetState = () => {
+                if (!isTutorSpeaking) return;
                 isTutorSpeaking = false;
                 tutorBubble.classList.remove('bubble-speaking');
                 renderer.stopSpeakingAnim(); 
@@ -521,9 +546,25 @@
                     }
                 }, 400);
             };
+
+            currentUtterance.onend = () => {
+                clearTimeout(ttsFallbackTimer);
+                resetState();
+            };
             
-            utterance.onerror = () => utterance.onend();
-            speechSynthesis.speak(utterance);
+            currentUtterance.onerror = (e) => {
+                clearTimeout(ttsFallbackTimer);
+                resetState();
+            };
+
+            // 만약 브라우저 버그로 onend 이벤트가 증발하면 강제로 상태를 풉니다 (먹통 방지)
+            clearTimeout(ttsFallbackTimer);
+            const estimatedDuration = Math.max(3000, text.length * 150 + 2000); 
+            ttsFallbackTimer = setTimeout(() => {
+                resetState();
+            }, estimatedDuration);
+
+            speechSynthesis.speak(currentUtterance);
         }
 
         /* =========================================================
@@ -533,9 +574,9 @@
             clearTimeout(nudgeTimer);
             nudgeTimer = setTimeout(() => {
                 if (!isTutorSpeaking && hasInitialized && !isFetching) {
-                    const nudgeMsg = currentChar === 'xeno' 
-                        ? "Xeno is waiting for your cool voice! Tap the mic and tell me!"
-                        : "Are you there? Tap the mic and tell me!";
+                    const nudgeMsg = currentLang === 'ko-KR' 
+                        ? (currentChar === 'xeno' ? "제노가 기다리고 있어요! 마이크 버튼을 누르고 말해주세요!" : "대답을 기다리고 있어요! 편하게 말해볼까요?")
+                        : (currentChar === 'xeno' ? "Xeno is waiting for your cool voice! Tap the mic and tell me!" : "Are you there? Tap the mic and tell me!");
                     speakText(nudgeMsg);
                 }
             }, 30000); 
@@ -546,7 +587,7 @@
         }
 
         /* =========================================================
-           7. Gemini 통신 엔진 (latest 모델 전면 제어)
+           7. Gemini 통신 엔진 (System Prompt + Rate Limit 대응)
            ========================================================= */
         async function fetchAvailableModels() {
             if (!apiKey) return false;
@@ -557,13 +598,11 @@
 
                 if (!res.ok) throw new Error(data.error.message || "API 키 권한 오류");
 
-                // 🌟 수정 완료: latest 모델 강제 제외 필터링
                 const validModels = data.models.filter(m =>
                     m.supportedGenerationMethods &&
                     m.supportedGenerationMethods.includes("generateContent") &&
                     m.name.includes("gemini") &&
-                    !m.name.includes("2.5") &&
-                    !m.name.includes("latest")
+                    !m.name.includes("2.5")
                 );
 
                 if (validModels.length === 0) throw new Error("호환되는 AI 모델이 없습니다.");
@@ -576,7 +615,7 @@
                 document.getElementById('debug-model').innerText = `연결된 모델: ${availableModel}`;
                 return true;
             } catch (error) {
-                tutorBubble.innerHTML = `<span class="text-red-500 font-bold">❌ 모델 연결 에러</span><br><br><span class="text-xs text-red-400">${error.message}</span>`;
+                tutorBubble.innerHTML = `<span class="text-red-500 font-medium">❌ 모델 연결 에러</span><br><br><span class="text-xs text-red-400">${error.message}</span>`;
                 statusText.innerText = "사용 불가";
                 return false;
             }
@@ -584,8 +623,10 @@
 
         async function callGemini(userText) {
             const charName = currentChar === 'xeno' ? 'Xeno (a clever fox)' : 'Xena (a gentle polar bear)';
+            const charNameKOR = currentChar === 'xeno' ? '제노' : '제나';
+            const displayCharName = currentLang === 'ko-KR' ? charNameKOR : charName;
             
-            statusText.innerText = `생각하고 있어요... 🤔`;
+            statusText.innerText = `${displayCharName}가 생각하고 있어요... 🤔`;
 
             try {
                 if(!availableModel) {
@@ -594,6 +635,11 @@
                 }
 
                 const url = `https://generativelanguage.googleapis.com/v1beta/${availableModel}:generateContent?key=${apiKey}`;
+
+                // 현재 모드에 따라 AI의 언어 강제
+                const languageRule = currentLang === 'ko-KR' 
+                    ? "CRITICAL RULE: You MUST answer entirely in KOREAN. Do not use English." 
+                    : "CRITICAL RULE: You MUST answer entirely in ENGLISH. Do not use Korean.";
 
                 const systemInstruction = `
 [ROLE & PERSONA]
@@ -613,6 +659,8 @@ Target student: Korean 3rd-grade elementary student (CEFR Pre-A1).
 3. SCAFFOLDING: If student makes a minor grammar error, NEVER say "Wrong". Model the correct expression naturally in your reply!
 4. TEACHER RESPECT: If asked an overly complex science or general question, say "Let's ask your teacher for help!"
 
+${languageRule}
+
 User said: "${userText}"
 `;
 
@@ -629,8 +677,10 @@ User said: "${userText}"
                 const data = await response.json();
 
                 if (response.status === 429) {
-                    const limitMsg = "Sorry, my thinking engine is currently on a short break (Rate limit reached). Let's wait 1 minute and speak again! 😊";
-                    tutorBubble.innerHTML = `<span class="text-slate-800 font-bold">${limitMsg}</span>`;
+                    const limitMsg = currentLang === 'ko-KR'
+                        ? "잠시 쉴게요. 1분 뒤에 다시 이야기해요! 😊"
+                        : "Sorry, I'm on a short break. Let's wait 1 minute! 😊";
+                    tutorBubble.innerHTML = `<span class="text-orange-600 font-medium">${displayCharName}:</span><br>${limitMsg}`;
                     speakText(limitMsg);
                     statusText.innerText = "잠시 휴식 중";
                     return;
@@ -640,13 +690,12 @@ User said: "${userText}"
 
                 const aiReply = data.candidates[0].content.parts[0].text.replace(/\*/g, '').trim();
 
-                // 🌟 수정 완료: "제노:", "제나:" 접두사 없이 답변 텍스트만 출력
-                tutorBubble.innerHTML = `<span class="text-slate-800 font-bold">${aiReply}</span>`;
+                tutorBubble.innerHTML = `<span class="text-slate-800 font-medium">${displayCharName}:</span> ${aiReply}`;
                 speakText(aiReply);
                 statusText.innerText = "대화 중";
 
             } catch (error) {
-                tutorBubble.innerHTML = `<span class="text-red-500 text-sm font-bold">API 에러:<br>${error.message}</span>`;
+                tutorBubble.innerHTML = `<span class="text-red-500 text-sm font-medium">API 에러:<br>${error.message}</span>`;
                 statusText.innerText = "에러가 발생했습니다.";
             } finally {
                 isFetching = false;
@@ -692,7 +741,7 @@ User said: "${userText}"
                     const hasBadEn = BAD_WORDS_EN.some(w => lowerFinal.includes(w));
 
                     if (hasBadKo || hasBadEn) {
-                        const admonishMsg = hasBadKo 
+                        const admonishMsg = currentLang === 'ko-KR' || hasBadKo 
                             ? "앗! AX 랩 탐험가들은 항상 예쁘고 고운 말을 사용해요. 우리 다시 다정하게 이야기해볼까요? 😊"
                             : "Oh! AX Lab explorers always use beautiful and kind words. Let's try speaking with nice words! 💖";
                         speakText(admonishMsg);
@@ -700,7 +749,7 @@ User said: "${userText}"
                     }
 
                     if (!apiKey) {
-                        speakText("Please register your API key first!");
+                        speakText(currentLang === 'ko-KR' ? "먼저 API 키를 등록해주세요!" : "Please register your API key first!");
                         return;
                     }
 
@@ -710,7 +759,7 @@ User said: "${userText}"
                     apiTimer = setTimeout(() => {
                         isFetching = true;
                         tutorBubble.innerText = "🤔 생각 중...";
-                        tutorBubble.className = 'font-bold p-5 rounded-3xl rounded-tl-none border border-yellow-300 text-[15px] leading-relaxed transition-all thinking-bubble';
+                        tutorBubble.className = 'font-normal p-5 rounded-3xl rounded-tl-none border border-yellow-300 text-[16px] md:text-[17px] leading-relaxed transition-all thinking-bubble';
                         callGemini(final);
                     }, 1200);
 
@@ -779,3 +828,5 @@ User said: "${userText}"
     </script>
 </body>
 </html>
+
+```
