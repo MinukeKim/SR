@@ -24,10 +24,10 @@
         .soft-shadow { box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08); }
         .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); }
 
-        /* 모던 슬라이더 */
+        /* 모던 슬라이더 및 비활성화(Disabled) 스타일 */
         input[type="range"] {
             -webkit-appearance: none; appearance: none;
-            height: 6px; border-radius: 4px; background: #e2e8f0; outline: none;
+            height: 6px; border-radius: 4px; background: #e2e8f0; outline: none; transition: opacity 0.2s;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none;
@@ -35,6 +35,17 @@
             background: #475569; border: 2px solid #ffffff; cursor: pointer; transition: transform 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        
+        /* 볼륨 슬라이더가 비활성화 되었을 때 시각적 피드백 */
+        input[type="range"]:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        input[type="range"]:disabled::-webkit-slider-thumb {
+            cursor: not-allowed;
+            background: #94a3b8;
+            transform: none !important;
+        }
 
         /* 말풍선 상태 시각화 */
         .bubble-speaking {
@@ -208,10 +219,10 @@
         const micGauge = document.getElementById('mic-gauge');
         const canvasEl = document.getElementById('tutorCanvas');
         const apiKeyInput = document.getElementById('api-key-input');
+        const volSlider = document.getElementById('master-vol'); // 볼륨 슬라이더 참조
 
         /* =========================================================
            2. 완벽하게 보존된 하이브리드 렌더러 엔진
-           (제공된 JSON 하드코딩 적용, 줌 꼼수 전면 배제)
            ========================================================= */
         const renderer = {
             config: {
@@ -283,7 +294,6 @@
                     
                     this.ctx.translate(200, 200 + breathe);
 
-                    // 줌 꼼수 없이 원본 파라미터(baseScale 0.17, 0.53 등)를 그대로 존중하여 렌더링
                     if (this.imageLoaded[currentChar]) {
                         const img = this.images[currentChar];
                         const cfg = this.config[currentChar];
@@ -472,18 +482,15 @@
 
         function updateVolume(val) {
             masterVolume = parseFloat(val);
-            if (masterVolume === 0 && speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-                renderer.stopSpeakingAnim();
-            }
+            // TTS 중 볼륨 0 캔슬 방어 로직 삭제 (슬라이더가 비활성화 되므로)
         }
 
         function switchTab(tabName) {
-            // 철벽 보안: 탭 스위칭 시 마이크/STT 리소스 즉시 폭파하여 점유권 충돌 방지
             if (recognition) recognition.stop();
             isTutorSpeaking = false;
             renderer.stopSpeakingAnim();
             speechSynthesis.cancel();
+            volSlider.disabled = false;
             
             currentTab = tabName;
             ['echo', 'reading', 'ai'].forEach(t => document.getElementById(`tab-${t}`).classList.remove('active'));
@@ -499,7 +506,7 @@
         }
 
         /* =========================================================
-           4. 지능형 텍스트 기반 TTS 엔진 (자동 언어 매핑)
+           4. 지능형 텍스트 기반 TTS 엔진 (볼륨 비활성화 로직 포함)
            ========================================================= */
         let voices = [];
         speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
@@ -507,12 +514,13 @@
         function speakText(text) {
             if (masterVolume === 0) return;
             
-            // 기존 발화 및 마이크 리소스 차단
             speechSynthesis.cancel(); 
             isTutorSpeaking = true;
             if (recognition) recognition.abort(); 
             
-            // 말풍선 스타일 초기화 및 적용
+            // TTS 재생 중 볼륨 조절 비활성화
+            volSlider.disabled = true;
+            
             tutorBubble.className = 'bg-slate-50 text-slate-700 font-bold p-5 rounded-3xl rounded-tl-none border border-slate-100 shadow-sm text-[15px] leading-relaxed transition-all bubble-speaking';
             tutorBubble.innerText = text;
             renderer.startSpeakingAnim(); 
@@ -520,7 +528,6 @@
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.volume = masterVolume;
             
-            // 🔥 핵심: 텍스트 내 한글 유무 정규식 분석으로 타겟 언어 동적 결정
             const hasKoreanChars = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
             const targetLang = hasKoreanChars ? 'ko-KR' : 'en-US';
             utterance.lang = targetLang;
@@ -535,7 +542,9 @@
                 tutorBubble.classList.remove('bubble-speaking');
                 renderer.stopSpeakingAnim(); 
                 
-                // 마이크 락킹 해제 및 안전한 재기동 (디바운스 적용)
+                // 발화 종료 시 볼륨 조절 다시 활성화
+                volSlider.disabled = false;
+                
                 setTimeout(() => {
                     if (!isTutorSpeaking && hasInitialized && recognition) {
                         try { recognition.start(); } catch(e) {}
@@ -557,7 +566,6 @@
                 return;
             }
 
-            // 시각적 '생각 중...' 피드백 및 마이크 락킹
             isTutorSpeaking = true; 
             if(recognition) recognition.stop();
             
@@ -597,10 +605,10 @@
             recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'ko-KR'; // 폭넓은 인식 수용을 위해 베이스 언어 유지
+            recognition.lang = 'ko-KR'; 
 
             recognition.onresult = (event) => {
-                if (isTutorSpeaking) return; // 튜터 발화 중 락킹
+                if (isTutorSpeaking) return; 
                 let interim = '', final = '', conf = 0;
 
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -613,7 +621,6 @@
                 }
 
                 if (final !== '') {
-                    // 사용자 발화 언어 감지 및 UI 스위칭
                     const hasKorean = /[가-힣]/.test(final);
                     const hasEnglish = /[a-zA-Z]/.test(final);
                     
@@ -627,7 +634,6 @@
                     accuracyText.style.display = 'block';
                     accuracyText.innerText = `Accuracy: ${Math.round(conf * 100)}%`;
 
-                    // 활성화된 탭 모드에 따른 라우팅
                     if (currentTab === 'echo') {
                         speakText(final);
                     } else if (currentTab === 'reading') {
@@ -641,7 +647,6 @@
             };
 
             recognition.onend = () => {
-                // 발화가 완전히 정지한 안전한 상태에서만 상시 대기 스레드 재가동
                 if (!isTutorSpeaking && hasInitialized) {
                     try { recognition.start(); } catch(e) {}
                 }
@@ -688,7 +693,6 @@
                 userText.innerText = "Mic access denied. Secure context required.";
             }
 
-            // 최초 화면 셋업 후 기본 인사
             setTimeout(() => {
                 speakText("안녕하세요! 저는 제노입니다. 함께 공부할까요?");
             }, 300);
