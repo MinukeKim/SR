@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AX LAB English AI Tutor v0.55</title>
+    <title>AX LAB English AI Tutor v0.55 (Refactored)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -64,13 +64,13 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between p-8 md:p-16 select-none bg-white">
 
-    <!-- 1회성 시작 오버레이 (영문 전용, 깔끔하고 가독성 극대화) -->
+    <!-- 1회성 시작 오버레이 -->
     <div id="start-overlay" class="fixed inset-0 bg-[#0f172a] z-[60] flex flex-col items-center justify-center text-white cursor-pointer" onclick="initAppOnInteraction()">
         <h2 class="text-4xl font-extrabold tracking-tight mb-4 text-[#f8fafc]">AX LAB English AI Tutor</h2>
         <p class="text-slate-400 text-sm font-bold tracking-widest uppercase">Click anywhere to start the tutor</p>
     </div>
 
-    <!-- API Key 입력용 모달 (AI 모드 선택 시 키가 없을 때만 호출됨) -->
+    <!-- API Key 입력용 모달 -->
     <div id="api-modal" class="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center hidden backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-[24px] p-8 max-w-md w-full mx-4 shadow-2xl border border-slate-100 transform transition-all duration-300 scale-95" id="api-modal-card">
             <h3 class="text-xl font-black text-slate-800 mb-2 flex items-center">
@@ -90,10 +90,10 @@
         </div>
     </div>
 
-    <!-- 메인 네이티브 컨테이너 (바탕 카드 패널 제거, 풀화면 레이아웃) -->
+    <!-- 메인 네이티브 컨테이너 -->
     <div class="w-full max-w-7xl mx-auto flex flex-col flex-1 justify-between gap-12">
         
-        <!-- HEADER BAR (타이틀 v0.55 짙은 회색 지정 및 우측 정밀 제어 버튼 정렬) -->
+        <!-- HEADER BAR -->
         <div class="flex flex-col md:flex-row items-center justify-between border-b border-slate-100 pb-6 gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold text-slate-700 flex items-baseline tracking-tight">
@@ -101,15 +101,14 @@
                 </h1>
             </div>
 
-            <!-- 우측 상단 모드 스위처 & 음성인식 언어 & 볼륨 조절 (가독성 향상판, 아이콘 제거) -->
             <div class="flex flex-wrap items-center gap-6 bg-slate-50/50 p-2.5 rounded-2xl border border-slate-100/80 shadow-sm">
-                <!-- 음성인식 언어 선택 (Kor+Eng / Eng Spc) -->
+                <!-- 음성인식 언어 선택 -->
                 <div class="flex items-center space-x-1 bg-slate-200/50 p-1 rounded-xl">
                     <button id="lang-ko-eng" onclick="setSpeechEngine('ko-eng')" class="px-4 py-2.5 text-sm font-black rounded-lg transition-all">Kor+Eng</button>
                     <button id="lang-eng-spc" onclick="setSpeechEngine('eng-spc')" class="px-4 py-2.5 text-sm font-black rounded-lg transition-all">Eng Spc</button>
                 </div>
 
-                <!-- 모드 선택 버튼 (아이콘 삭제, 폰트 업스케일 및 가독성 증가, AI 연동모드 -> AI 모드로 변경) -->
+                <!-- 모드 선택 버튼 -->
                 <div class="flex items-center space-x-1 bg-slate-200/50 p-1 rounded-xl">
                     <button id="mode-chatbot" onclick="setAppMode('chatbot')" class="px-5 py-2.5 text-sm font-black rounded-lg transition-all">챗봇 모드</button>
                     <button id="mode-ai" onclick="setAppMode('ai')" class="px-5 py-2.5 text-sm font-black rounded-lg transition-all">AI 모드</button>
@@ -130,52 +129,48 @@
         <!-- MAIN LAYOUT -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-12 flex-1 items-center">
             
-            <!-- 좌측 캐릭터 영역 (Canvas + 아래 캐릭터 선택 버튼) -->
+            <!-- 좌측 캐릭터 영역 -->
             <div class="md:col-span-5 flex flex-col items-center justify-center space-y-6">
-                <!-- 캐릭터 뷰 영역 Canvas (완전 투명 배경, 400x600 px 전신 대응 종횡비, 글로우 효과 없음) -->
                 <div class="relative flex items-center justify-center w-full">
                     <canvas id="tutorCanvas" width="400" height="600" class="bg-transparent canvas-responsive transition-all duration-300"></canvas>
                 </div>
                 
-                <!-- 캐릭터 선택 버튼 (괄호 및 아이콘 제거, 깔끔하고 시인성 높은 텍스트 타입) -->
                 <div class="flex space-x-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50 shadow-sm w-[260px] justify-center">
                     <button id="char-xeno" onclick="setCharacter('xeno')" class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-white rounded-xl transition">Xeno</button>
                     <button id="char-xena" onclick="setCharacter('xena')" class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-white rounded-xl transition">Xena</button>
                 </div>
             </div>
 
-            <!-- 우측 대화 버블 영역 (라인 없음, 폰트 가독성 극대화, 2단 대화 시스템) -->
+            <!-- 우측 대화 버블 영역 -->
             <div class="md:col-span-7 flex flex-col justify-between h-full min-h-[500px] gap-6">
                 
-                <!-- 1. 튜터 대사 말풍선 (제노일 때 아주 옅은 오렌지, 제나일 때 아주 옅은 하늘색) -->
+                <!-- 1. 튜터 대사 말풍선 -->
                 <div id="tutor-bubble-container" class="p-10 md:p-12 rounded-[2.5rem] transition-all duration-500 flex flex-col justify-center min-h-[220px] shadow-sm relative border-0">
                     <div class="mb-3">
                         <span id="tutor-label" class="text-xs font-black text-slate-400 tracking-widest uppercase">TUTOR</span>
                     </div>
-                    <!-- 튜터 대사 버블 (이름 제거, 폰트 가독성 최대화) -->
                     <div id="tutor-bubble" class="text-slate-800 font-extrabold text-2xl md:text-3xl leading-relaxed transition-all duration-300">
                         Initializing character...
                     </div>
                     
-                    <!-- 객관식 퀴즈 버튼 컨테이너 (챗봇 모드에서 동적 생성) -->
                     <div id="quiz-options-container" class="mt-6 flex flex-col gap-2.5 hidden">
-                        <!-- 버튼들이 스크립트에 의해 동적으로 깔끔히 주입됨 -->
                     </div>
                 </div>
 
-                <!-- 2. 유저 음성인식 텍스트 말풍선 (YOU, 옅은 노란색 bg-[#fffdf0] 고정, 테두리 없음) -->
+                <!-- 2. 유저 음성인식 텍스트 말풍선 -->
                 <div id="user-bubble-container" class="p-8 md:p-10 rounded-[2.5rem] bg-[#fffdf0] border-0 flex flex-col justify-center min-h-[140px] shadow-sm relative transition-all duration-500">
                     <div class="mb-3 flex justify-between items-center">
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-4">
                             <span class="text-xs font-black text-slate-400 tracking-widest uppercase">YOU</span>
-                            <!-- 자동으로 켜지는 마이크 상태 지시등과 텍스트 -->
-                            <span id="automatic-speak-indicator" class="hidden flex items-center bg-rose-50 text-rose-600 text-[10px] font-black px-2.5 py-1 rounded-full border border-rose-100 animate-pulse">
-                                <span class="w-2 h-2 bg-rose-500 rounded-full mr-1.5 animate-blink-record inline-block"></span>
-                                Speak!
-                            </span>
+                            
+                            <!-- 수동 제어 토글 버튼 (말하기/제출) -->
+                            <button id="btn-manual-speak" onclick="toggleManualRecording()" class="flex items-center bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] md:text-xs font-black px-3.5 py-1.5 rounded-xl border border-rose-200 transition-all active:scale-95 shadow-sm">
+                                <span id="speak-btn-icon" class="w-2.5 h-2.5 bg-rose-500 rounded-full mr-1.5 inline-block"></span>
+                                <span id="speak-btn-text">[말하기] (Space)</span>
+                            </button>
                         </div>
                         
-                        <!-- 마이크 볼륨 실시간 게이지 (자동으로 활성화) -->
+                        <!-- 마이크 볼륨 실시간 게이지 -->
                         <div id="mic-gauge-container" class="hidden flex items-center space-x-2 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 transition-all duration-300">
                             <span class="text-[9px] font-black text-indigo-500 uppercase tracking-wider">Volume</span>
                             <div class="w-20 h-1.5 bg-indigo-200/60 rounded-full overflow-hidden">
@@ -183,9 +178,8 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 실시간 및 최종 유저 발화 텍스트 출력창 -->
                     <div id="user-text" class="text-slate-400 font-bold text-lg md:text-xl italic transition-all duration-300 leading-relaxed">
-                        Tutor is ready. Speak when the indicator turns on!
+                        Tutor is ready. Press [말하기] or Spacebar to speak!
                     </div>
                 </div>
 
@@ -202,29 +196,25 @@
         let isTutorSpeaking = false;
         let hasInitialized = false;
         let masterVolume = 1.0;
-        let appMode = 'chatbot'; // 'chatbot' (Default) or 'ai'
+        let appMode = 'chatbot'; 
         let apiKey = localStorage.getItem('saved_gemini_api_key') || '';
         let availableModel = null;
         let isFetching = false;
         
-        // 지능형 대화 상태 트리
-        let appState = 'GREETING'; // 'GREETING', 'ASK_PLAY_QUIZ', 'QUIZ_PLAYING', 'QUIZ_DECLINED_IDLE'
+        let appState = 'GREETING'; 
         
-        // 수동 및 자동 음성인식 제어 전역 변수
         let recognition = null;
         let micStream = null;
         let audioCtx = null;
         let analyser = null;
         let animationFrameId = null;
-        let activeEngine = 'ko-eng'; // 'ko-eng' (Default) or 'eng-spc'
+        let activeEngine = 'ko-eng'; 
         let isRecording = false;
-        let recordingTimeoutId = null;
-        let nudgeTimer = null; // 30초 대기 독촉 타이머
+        let nudgeTimer = null; 
 
-        // Chrome Garbage Collector 방지용 전역 TTS 발화 객체 레퍼런스 유지
         window.activeUtterance = null;
         window.ttsFallbackTimeout = null;
-        window.lastRecognizedText = ""; // 캐시용 최종 텍스트
+        window.lastRecognizedText = ""; 
 
         const tutorBubble = document.getElementById('tutor-bubble');
         const tutorLabel = document.getElementById('tutor-label');
@@ -234,224 +224,95 @@
         const quizContainer = document.getElementById('quiz-options-container');
 
         /* =========================================================
-           2. 10문항 객관식 퀴즈 데이터셋 (교과 내용 밀접 매칭)
+           [FIX] 볼륨 컨트롤러: 문자열 값을 숫자로 변환
+           ========================================================= */
+        function updateVolume(val) {
+            masterVolume = parseFloat(val);
+            document.getElementById('volume-text').innerText = Math.round(masterVolume * 100) + '%';
+        }
+
+        /* =========================================================
+           2. 10문항 객관식 퀴즈 데이터셋
            ========================================================= */
         const quizDatabase = [
             {
-                id: 1,
-                q: "How did ancient Egyptians move big stones?",
-                k: "고대 이집트인들은 큰 돌을 어떻게 움직였을까요?",
-                options: [
-                    { key: "A", text: "Ramps and ropes (경사로와 밧줄)" },
-                    { key: "B", text: "Helicopters (헬리콥터)" },
-                    { key: "C", text: "Trains (기차)" }
-                ],
-                correct: "A",
-                replyCorrect: "Excellent! They used smart tools like ramps and ropes to pull heavy stones up! You are so smart!",
-                replyWrong: "Oh, they didn't have helicopters or trains in ancient Egypt! Try again! Ramps and ropes help move stones easily."
+                id: 1, q: "How did ancient Egyptians move big stones?", k: "고대 이집트인들은 큰 돌을 어떻게 움직였을까요?",
+                options: [ { key: "A", text: "Ramps and ropes" }, { key: "B", text: "Helicopters" }, { key: "C", text: "Trains" } ],
+                correct: "A", replyCorrect: "Excellent! They used smart tools like ramps and ropes to pull heavy stones up! You are so smart!", replyWrong: "Oh, they didn't have helicopters or trains in ancient Egypt! Try again! Ramps and ropes help move stones easily."
             },
             {
-                id: 2,
-                q: "What force moves things away from you?",
-                k: "물건을 나에게서 멀리 밀어내는 힘은 무엇일까요?",
-                options: [
-                    { key: "A", text: "Pull (당기기)" },
-                    { key: "B", text: "Push (밀기)" },
-                    { key: "C", text: "Gravity (중력)" }
-                ],
-                correct: "B",
-                replyCorrect: "Correct! Pushing moves a thing away. Just like pushing big pyramid stones forward!",
-                replyWrong: "Oops! Pulling brings a thing close to you. Think again! Pushing moves a thing away."
+                id: 2, q: "What force moves things away from you?", k: "물건을 나에게서 멀리 밀어내는 힘은 무엇일까요?",
+                options: [ { key: "A", text: "Pull" }, { key: "B", text: "Push" }, { key: "C", text: "Gravity" } ],
+                correct: "B", replyCorrect: "Correct! Pushing moves a thing away. Just like pushing big pyramid stones forward!", replyWrong: "Oops! Pulling brings a thing close to you. Think again! Pushing moves a thing away."
             },
             {
-                id: 3,
-                q: "What force brings heavy things close to you?",
-                k: "무거운 물건을 나에게로 가까이 오게 만드는 힘은 무엇일까요?",
-                options: [
-                    { key: "A", text: "Push (밀기)" },
-                    { key: "B", text: "Pull (당기기)" },
-                    { key: "C", text: "Wind (바람)" }
-                ],
-                correct: "B",
-                replyCorrect: "Great job! Pulling brings things close. Egyptians pull strong ropes together to move stones!",
-                replyWrong: "Almost there! Pushing moves things away. Pulling is the force that brings things close. Try once more!"
+                id: 3, q: "What force brings heavy things close to you?", k: "무거운 물건을 나에게로 가까이 오게 만드는 힘은 무엇일까요?",
+                options: [ { key: "A", text: "Push" }, { key: "B", text: "Pull" }, { key: "C", text: "Wind" } ],
+                correct: "B", replyCorrect: "Great job! Pulling brings things close. Egyptians pull strong ropes together to move stones!", replyWrong: "Almost there! Pushing moves things away. Pulling is the force that brings things close. Try once more!"
             },
             {
-                id: 4,
-                q: "A ramp is a _____ tool.",
-                k: "경사로는 _____ 도구입니다.",
-                options: [
-                    { key: "A", text: "Heavy (무거운)" },
-                    { key: "B", text: "Smart (똑똑한)" },
-                    { key: "C", text: "Bad (나쁜)" }
-                ],
-                correct: "B",
-                replyCorrect: "Yes! A ramp is a smart tool. It helps lift heavy stones easily without carrying them straight up!",
-                replyWrong: "Ah! A ramp makes work much easier, so it is a smart tool. Let's select Smart!"
+                id: 4, q: "A ramp is a _____ tool.", k: "경사로는 _____ 도구입니다.",
+                options: [ { key: "A", text: "Heavy" }, { key: "B", text: "Smart" }, { key: "C", text: "Bad" } ],
+                correct: "B", replyCorrect: "Yes! A ramp is a smart tool. It helps lift heavy stones easily without carrying them straight up!", replyWrong: "Ah! A ramp makes work much easier, so it is a smart tool. Let's select Smart!"
             },
             {
-                id: 5,
-                q: "In physics, what makes things move?",
-                k: "물리학에서 물체를 움직이게 만드는 원동력은 무엇일까요?",
-                options: [
-                    { key: "A", text: "Sound (소리)" },
-                    { key: "B", text: "Force (힘)" },
-                    { key: "C", text: "Shadow (그림자)" }
-                ],
-                correct: "B",
-                replyCorrect: "Spot on! Force makes things move. Pushing and pulling are types of forces!",
-                replyWrong: "No, sound and shadow cannot push or pull objects. Force is the magic that moves things!"
+                id: 5, q: "In physics, what makes things move?", k: "물리학에서 물체를 움직이게 만드는 원동력은 무엇일까요?",
+                options: [ { key: "A", text: "Sound" }, { key: "B", text: "Force" }, { key: "C", text: "Shadow" } ],
+                correct: "B", replyCorrect: "Spot on! Force makes things move. Pushing and pulling are types of forces!", replyWrong: "No, sound and shadow cannot push or pull objects. Force is the magic that moves things!"
             },
             {
-                id: 6,
-                q: "They use a _____ to lift heavy stones up.",
-                k: "그들은 무거운 돌을 들어 올리기 위해 _____를 사용했습니다.",
-                options: [
-                    { key: "A", text: "Lever (지레)" },
-                    { key: "B", text: "Cup (컵)" },
-                    { key: "C", text: "Pencil (연필)" }
-                ],
-                correct: "A",
-                replyCorrect: "Hooray! A lever is a smart tool used to lift heavy things easily. Excellent answer!",
-                replyWrong: "Oh, cups and pencils are too small and weak! They used a lever to lift heavy stone blocks."
+                id: 6, q: "They use a _____ to lift heavy stones up.", k: "그들은 무거운 돌을 들어 올리기 위해 _____를 사용했습니다.",
+                options: [ { key: "A", text: "Lever" }, { key: "B", text: "Cup" }, { key: "C", text: "Pencil" } ],
+                correct: "A", replyCorrect: "Hooray! A lever is a smart tool used to lift heavy things easily. Excellent answer!", replyWrong: "Oh, cups and pencils are too small and weak! They used a lever to lift heavy stone blocks."
             },
             {
-                id: 7,
-                q: "Egypt is a big country famous for _____",
-                k: "이집트는 이것으로 매우 유명한 크고 뜨거운 나라입니다.",
-                options: [
-                    { key: "A", text: "Oceans (바다)" },
-                    { key: "B", text: "Pyramids (피라미드)" },
-                    { key: "C", text: "Forests (숲)" }
-                ],
-                correct: "B",
-                replyCorrect: "Amazing! Ancient Egyptians built giant stone pyramids. That is their cool secret!",
-                replyWrong: "Egypt is a hot desert country, so it doesn't have big forests. Pyramids are the famous landmarks!"
+                id: 7, q: "Egypt is a big country famous for _____", k: "이집트는 이것으로 매우 유명한 크고 뜨거운 나라입니다.",
+                options: [ { key: "A", text: "Oceans" }, { key: "B", text: "Pyramids" }, { key: "C", text: "Forests" } ],
+                correct: "B", replyCorrect: "Amazing! Ancient Egyptians built giant stone pyramids. That is their cool secret!", replyWrong: "Egypt is a hot desert country, so it doesn't have big forests. Pyramids are the famous landmarks!"
             },
             {
-                id: 8,
-                q: "Do Egyptians use only hands to build pyramids?",
-                k: "이집트인들은 피라미드를 지을 때 오직 손만 사용했을까요?",
-                options: [
-                    { key: "A", text: "Yes, only hands (네, 손만 썼어요)" },
-                    { key: "B", text: "No, they use force and tools (아니요, 힘과 도구를 썼어요)" },
-                    { key: "C", text: "No, they use magic (아니요, 마법을 썼어요)" }
-                ],
-                correct: "B",
-                replyCorrect: "Exactly! They do not use only hands. They use force and smart tools like ropes, ramps, and levers!",
-                replyWrong: "No, pyramids were built using science and physical tools, not magic or simple bare hands. Try again!"
+                id: 8, q: "Do Egyptians use only hands to build pyramids?", k: "이집트인들은 피라미드를 지을 때 오직 손만 사용했을까요?",
+                options: [ { key: "A", text: "Yes, only hands" }, { key: "B", text: "No, they use force and tools" }, { key: "C", text: "No, they use magic" } ],
+                correct: "B", replyCorrect: "Exactly! They do not use only hands. They use force and smart tools like ropes, ramps, and levers!", replyWrong: "No, pyramids were built using science and physical tools, not magic or simple bare hands. Try again!"
             },
             {
-                id: 9,
-                q: "Pushing makes a thing move _____",
-                k: "밀기 힘은 물체를 나에게서 어떤 방향으로 움직이게 할까요?",
-                options: [
-                    { key: "A", text: "Close (가까이)" },
-                    { key: "B", text: "Away (멀리)" },
-                    { key: "C", text: "Up (위로)" }
-                ],
-                correct: "B",
-                replyCorrect: "Perfect! Pushing makes a thing move away. Great understanding of force!",
-                replyWrong: "No, pulling brings things close. Pushing makes them move away! Try again!"
+                id: 9, q: "Pushing makes a thing move _____", k: "밀기 힘은 물체를 나에게서 어떤 방향으로 움직이게 할까요?",
+                options: [ { key: "A", text: "Close" }, { key: "B", text: "Away" }, { key: "C", text: "Up" } ],
+                correct: "B", replyCorrect: "Perfect! Pushing makes a thing move away. Great understanding of force!", replyWrong: "No, pulling brings things close. Pushing makes them move away! Try again!"
             },
             {
-                id: 10,
-                q: "Pulling makes a heavy thing come _____",
-                k: "당기기 힘은 무거운 물체를 나에게 어떤 방향으로 오게 만들까요?",
-                options: [
-                    { key: "A", text: "Close (가까이)" },
-                    { key: "B", text: "Away (멀리)" },
-                    { key: "C", text: "Down (아래로)" }
-                ],
-                correct: "A",
-                replyCorrect: "Superb! Pulling makes a heavy thing come close. We pull strong ropes close!",
-                replyWrong: "Not away! Pushing moves away, and pulling brings it close. Let's select close!"
+                id: 10, q: "Pulling makes a heavy thing come _____", k: "당기기 힘은 무거운 물체를 나에게 어떤 방향으로 오게 만들까요?",
+                options: [ { key: "A", text: "Close" }, { key: "B", text: "Away" }, { key: "C", text: "Down" } ],
+                correct: "A", replyCorrect: "Superb! Pulling makes a heavy thing come close. We pull strong ropes close!", replyWrong: "Not away! Pushing moves away, and pulling brings it close. Let's select close!"
             }
         ];
 
-        let activeQuizIndex = 0; // 현재 출제 중인 퀴즈 인덱스 (0-9)
-        let isQuizActive = false; // 현재 퀴즈 풀이 상태 여부
+        let activeQuizIndex = 0; 
+        let isQuizActive = false; 
 
         /* =========================================================
-           3. 캔버스 2D v11 프리미엄 벡터 전신 캐릭터 그래픽 렌더러
+           3. 캔버스 캐릭터 그래픽 렌더러 (FIXED Animation)
            ========================================================= */
         const renderer = {
             config: {
-                "xena": {
-                    "maskType": "none",
-                    "baseScale": 0.9,
-                    "baseX": -1,
-                    "baseY": 35,
-                    "eyeY": 96,
-                    "eyeSpacing": 70,
-                    "eyeWidth": 13,
-                    "eyeHeight": 13,
-                    "eyeLineThickness": 1,
-                    "pupilSize": 24,
-                    "pupilLeftOffsetX": 2.5,
-                    "pupilLeftOffsetY": 0,
-                    "pupilRightOffsetX": -3,
-                    "pupilRightOffsetY": 0,
-                    "eyebrowY": -36,
-                    "eyebrowLength": 21,
-                    "eyebrowAngle": -14,
-                    "eyebrowThickness": 3,
-                    "mouthY": 145,
-                    "mouthWidth": 33.5,
-                    "verticalLineLength": 7,
-                    "mouthCurve": 9,
-                    "mouthOffsetX": 1,
-                    "mouthOffsetY": 1.5,
-                    "mouthLineThickness": 1.4,
-                    "mouthOpenStyle": "smiling"
-                },
-                "xeno": {
-                    "maskType": "none",
-                    "baseScale": 0.9,
-                    "baseX": 0,
-                    "baseY": 12,
-                    "eyeY": 67,
-                    "eyeSpacing": 66,
-                    "eyeWidth": 15,
-                    "eyeHeight": 15.5,
-                    "eyeLineThickness": 1,
-                    "pupilSize": 24.2,
-                    "pupilLeftOffsetX": 2.5,
-                    "pupilLeftOffsetY": 1,
-                    "pupilRightOffsetX": -3,
-                    "pupilRightOffsetY": 0.5,
-                    "eyebrowY": -33,
-                    "eyebrowLength": 26,
-                    "eyebrowAngle": -16,
-                    "eyebrowThickness": 4,
-                    "mouthY": 111,
-                    "mouthWidth": 29,
-                    "verticalLineLength": 7,
-                    "mouthCurve": 10,
-                    "mouthOffsetX": -1.5,
-                    "mouthOffsetY": 1,
-                    "mouthLineThickness": 1.6,
-                    "mouthOpenStyle": "smiling"
-                }
+                "xena": { "baseScale": 0.9, "baseX": -1, "baseY": 35, "eyeY": 96, "eyeSpacing": 70, "eyeWidth": 13, "eyeHeight": 13, "eyeLineThickness": 1, "pupilSize": 24, "pupilLeftOffsetX": 2.5, "pupilRightOffsetX": -3, "eyebrowY": -36, "eyebrowLength": 21, "eyebrowAngle": -14, "eyebrowThickness": 3, "mouthY": 145, "mouthWidth": 33.5, "verticalLineLength": 7, "mouthCurve": 9, "mouthOffsetX": 1, "mouthOffsetY": 1.5, "mouthLineThickness": 1.4, "mouthOpenStyle": "smiling" },
+                "xeno": { "baseScale": 0.9, "baseX": 0, "baseY": 12, "eyeY": 67, "eyeSpacing": 66, "eyeWidth": 15, "eyeHeight": 15.5, "eyeLineThickness": 1, "pupilSize": 24.2, "pupilLeftOffsetX": 2.5, "pupilLeftOffsetY": 1, "pupilRightOffsetX": -3, "pupilRightOffsetY": 0.5, "eyebrowY": -33, "eyebrowLength": 26, "eyebrowAngle": -16, "eyebrowThickness": 4, "mouthY": 111, "mouthWidth": 29, "verticalLineLength": 7, "mouthCurve": 10, "mouthOffsetX": -1.5, "mouthOffsetY": 1, "mouthLineThickness": 1.6, "mouthOpenStyle": "smiling" }
             },
             simulation: { mouthOpen: 0, blinkState: 0, blinkTimer: 0, isSpeaking: false, vowel: 'A', speakIntervalId: null },
-            ctx: null,
-            images: { xena: new Image(), xeno: new Image() },
-            imageLoaded: { xena: false, xeno: false },
+            ctx: null, images: { xena: new Image(), xeno: new Image() }, imageLoaded: { xena: false, xeno: false },
 
             init: function() {
                 this.ctx = canvasEl.getContext('2d');
-                // 고화질 캐릭터 PNG 원화 매핑
                 this.images.xena.src = "Xena_base.png";
                 this.images.xeno.src = "Xeno_base.png";
-                
                 this.images.xena.onload = () => { this.imageLoaded.xena = true; };
                 this.images.xeno.onload = () => { this.imageLoaded.xeno = true; };
-                
                 this.startLoop();
             },
 
             startSpeakingAnim: function() {
+                // [FIX] 기존 타이머 무조건 삭제로 다중 루프(가속도 버그) 방지
+                clearInterval(this.simulation.speakIntervalId); 
                 this.simulation.isSpeaking = true;
                 const vowels = ['A', 'E', 'I', 'O', 'U'];
                 let vIdx = 0;
@@ -464,7 +325,9 @@
 
             stopSpeakingAnim: function() {
                 this.simulation.isSpeaking = false;
+                // [FIX] 확실한 초기화로 고아 타이머 방지
                 clearInterval(this.simulation.speakIntervalId);
+                this.simulation.speakIntervalId = null;
                 this.simulation.mouthOpen = 0;
             },
 
@@ -475,7 +338,6 @@
                     this.ctx.save();
                     this.ctx.translate(200, 300 + breathe);
 
-                    // 1. 투명 배경 바탕에 원화 이미지 그리기
                     if (this.imageLoaded[currentChar]) {
                         const img = this.images[currentChar];
                         const cfg = this.config[currentChar];
@@ -486,20 +348,18 @@
                         this.drawBackupSilhouette();
                     }
 
-                    // 2. 고화질 실시간 조율 피처 (눈, 눈썹, 입동기화) 순차 빌드
                     this.drawVectorEyes();
                     this.drawVectorEyebrows();
                     this.drawVectorMouth();
                     
                     this.ctx.restore();
 
-                    // 3. 눈 깜빡임 타이밍 루프 계산
                     if (!this.simulation.isSpeaking) {
                         this.simulation.blinkTimer++;
                         if (this.simulation.blinkTimer > 200) {
-                            this.simulation.blinkState = 1; // Closed
+                            this.simulation.blinkState = 1;
                             if (this.simulation.blinkTimer > 212) {
-                                this.simulation.blinkState = 0; // Open
+                                this.simulation.blinkState = 0; 
                                 this.simulation.blinkTimer = 0;
                             }
                         }
@@ -514,11 +374,9 @@
                 this.ctx.save();
                 this.ctx.beginPath();
                 const isXena = currentChar === 'xena';
-                
                 this.ctx.arc(0, 140, 100, 0, Math.PI * 2);
                 this.ctx.fillStyle = isXena ? "#f0f7ff" : "#fffbf2"; 
                 this.ctx.fill();
-
                 this.ctx.beginPath();
                 this.ctx.arc(0, 10, 105, 0, Math.PI * 2);
                 this.ctx.fillStyle = isXena ? "#f8fafc" : "#fffbeb"; 
@@ -526,7 +384,6 @@
                 this.ctx.strokeStyle = "#cbd5e1";
                 this.ctx.lineWidth = 4;
                 this.ctx.stroke();
-
                 this.ctx.fillStyle = "#64748b";
                 this.ctx.font = "bold 13px sans-serif";
                 this.ctx.textAlign = "center";
@@ -571,7 +428,6 @@
                 const cfg = this.config[currentChar];
                 const halfSpacing = cfg.eyeSpacing / 2;
                 const browY = (cfg.eyeY - 200) + cfg.eyebrowY;
-
                 const drawBrow = (bx, isLeft) => {
                     this.ctx.save();
                     this.ctx.translate(bx, browY);
@@ -592,15 +448,9 @@
                 this.ctx.save();
                 this.ctx.translate(cfg.mouthOffsetX || 0, (cfg.mouthY - 200) + (cfg.mouthOffsetY || 0));
 
-                const currentMouthW = cfg.mouthWidth;
-                const currentMouthH = this.simulation.mouthOpen;
-
                 if (this.simulation.mouthOpen > 1.5) {
-                    // 말하는 열린 입 렌더링
-                    let scaleW = 1.0;
-                    let scaleH = 1.0;
+                    let scaleW = 1.0; let scaleH = 1.0;
                     const activeVowel = this.simulation.vowel || 'A';
-                    
                     if (activeVowel === 'A') { scaleW = 0.85; scaleH = 1.3; }
                     else if (activeVowel === 'E') { scaleW = 0.95; scaleH = 0.9; }
                     else if (activeVowel === 'I') { scaleW = 1.0; scaleH = 0.45; }
@@ -610,21 +460,16 @@
                     const mouthW = cfg.mouthWidth * scaleW;
                     const mouthH = this.simulation.mouthOpen * scaleH;
 
-                    // 코 세로선(인중) 및 입술 정밀 유기적 결합 그리기 (v11 구조)
                     if (cfg.verticalLineLength > 0) {
                         const upperLipY = cfg.mouthOpenStyle === 'smiling' ? -mouthH * 0.15 : -mouthH;
                         if (-cfg.verticalLineLength < upperLipY) {
                             this.ctx.beginPath();
                             this.ctx.moveTo(0, -cfg.verticalLineLength);
                             this.ctx.lineTo(0, upperLipY);
-                            this.ctx.strokeStyle = "#1e293b";
-                            this.ctx.lineWidth = cfg.mouthLineThickness || 1.5;
-                            this.ctx.lineCap = "round";
-                            this.ctx.stroke();
+                            this.ctx.strokeStyle = "#1e293b"; this.ctx.lineWidth = cfg.mouthLineThickness || 1.5; this.ctx.lineCap = "round"; this.ctx.stroke();
                         }
                     }
 
-                    // 입안 어두운 배경 영역
                     this.ctx.beginPath();
                     if (cfg.mouthOpenStyle === 'smiling') {
                         this.ctx.moveTo(-mouthW, -mouthH * 0.15);
@@ -634,17 +479,11 @@
                     } else {
                         this.ctx.ellipse(0, 0, mouthW, mouthH, 0, 0, Math.PI * 2);
                     }
-
                     const mouthGrad = this.ctx.createLinearGradient(0, -mouthH, 0, mouthH);
-                    mouthGrad.addColorStop(0, "#3b0712"); 
-                    mouthGrad.addColorStop(1, "#881337"); 
-                    this.ctx.fillStyle = mouthGrad;
-                    this.ctx.fill();
-                    this.ctx.strokeStyle = "#1e293b";
-                    this.ctx.lineWidth = cfg.mouthLineThickness || 1.5;
-                    this.ctx.stroke();
+                    mouthGrad.addColorStop(0, "#3b0712"); mouthGrad.addColorStop(1, "#881337"); 
+                    this.ctx.fillStyle = mouthGrad; this.ctx.fill();
+                    this.ctx.strokeStyle = "#1e293b"; this.ctx.lineWidth = cfg.mouthLineThickness || 1.5; this.ctx.stroke();
 
-                    // 클리핑을 통한 내부 혀 그리기 가이드라인 확보
                     this.ctx.save();
                     this.ctx.beginPath();
                     if (cfg.mouthOpenStyle === 'smiling') {
@@ -657,73 +496,47 @@
                     }
                     this.ctx.clip();
 
-                    // 혀 (v11 저프로필 밀착 핑크 혀 설계 적용)
                     this.ctx.beginPath();
                     let tongueY, tongueW, tongueH;
                     if (cfg.mouthOpenStyle === 'smiling') {
-                        tongueY = mouthH * 0.85;      
-                        tongueW = mouthW * 0.55;      
-                        tongueH = mouthH * 0.45;      
+                        tongueY = mouthH * 0.85; tongueW = mouthW * 0.55; tongueH = mouthH * 0.45;      
                     } else {
-                        tongueY = mouthH * 0.65;      
-                        tongueW = mouthW * 0.55;
-                        tongueH = mouthH * 0.35;
+                        tongueY = mouthH * 0.65; tongueW = mouthW * 0.55; tongueH = mouthH * 0.35;
                     }
                     this.ctx.ellipse(0, tongueY, tongueW, tongueH, 0, 0, Math.PI * 2);
-
                     const tongueGrad = this.ctx.createLinearGradient(0, tongueY - tongueH, 0, tongueY + tongueH);
-                    tongueGrad.addColorStop(0, "#fda4af"); 
-                    tongueGrad.addColorStop(1, "#f43f5e"); 
-                    this.ctx.fillStyle = tongueGrad;
-                    this.ctx.fill();
+                    tongueGrad.addColorStop(0, "#fda4af"); tongueGrad.addColorStop(1, "#f43f5e"); 
+                    this.ctx.fillStyle = tongueGrad; this.ctx.fill();
+                    this.ctx.strokeStyle = "#be123c"; this.ctx.lineWidth = 1.5; this.ctx.stroke();
 
-                    this.ctx.strokeStyle = "#be123c";
-                    this.ctx.lineWidth = 1.5;
-                    this.ctx.stroke();
-
-                    // 혀 가운데 홈선
                     this.ctx.beginPath();
                     this.ctx.moveTo(0, tongueY - tongueH * 0.4);
                     this.ctx.lineTo(0, tongueY + tongueH * 0.6);
-                    this.ctx.strokeStyle = "#9f1239";
-                    this.ctx.lineWidth = 1.5;
-                    this.ctx.stroke();
-
+                    this.ctx.strokeStyle = "#9f1239"; this.ctx.lineWidth = 1.5; this.ctx.stroke();
                     this.ctx.restore();
                 } else {
-                    // 닫힌 입 렌더링
-                    // 1. 코 세로선 (인중)
                     if (cfg.verticalLineLength > 0) {
                         this.ctx.beginPath();
                         this.ctx.moveTo(0, -cfg.verticalLineLength);
                         this.ctx.lineTo(0, 0);
-                        this.ctx.strokeStyle = "#1e293b";
-                        this.ctx.lineWidth = cfg.mouthLineThickness || 1.5;
-                        this.ctx.lineCap = "round";
-                        this.ctx.stroke();
+                        this.ctx.strokeStyle = "#1e293b"; this.ctx.lineWidth = cfg.mouthLineThickness || 1.5; this.ctx.lineCap = "round"; this.ctx.stroke();
                     }
-
-                    // 2. 가만히 닫힌 다정 미소선
                     this.ctx.beginPath();
                     this.ctx.moveTo(-cfg.mouthWidth, -2);
                     this.ctx.quadraticCurveTo(0, cfg.mouthCurve, cfg.mouthWidth, -2);
-                    this.ctx.strokeStyle = "#1e293b";
-                    this.ctx.lineWidth = (cfg.mouthLineThickness * 1.25) || 2.0;
-                    this.ctx.lineCap = "round";
-                    this.ctx.stroke();
+                    this.ctx.strokeStyle = "#1e293b"; this.ctx.lineWidth = (cfg.mouthLineThickness * 1.25) || 2.0; this.ctx.lineCap = "round"; this.ctx.stroke();
                 }
                 this.ctx.restore();
             }
         };
 
         /* =========================================================
-           3. 다국어 지능형 음성 합성 엔진 (TTS) - 목소리 교체 & 안정 가드 적용
+           4. 다국어 음성 합성 엔진 (TTS)
            ========================================================= */
         let voices = [];
         speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
 
         function speakText(text) {
-            // 새 발화 시작 전, 이전 activeUtterance 핸들러를 전부 nullify 하여 canceled 레이스 컨디션 오동작 완전 방지
             if (window.activeUtterance) {
                 window.activeUtterance.onstart = null;
                 window.activeUtterance.onend = null;
@@ -741,17 +554,12 @@
             
             isTutorSpeaking = true;
             renderer.startSpeakingAnim();
-
-            // TTS 재생 시 볼륨 슬라이더 비활성화
             volSlider.disabled = true;
-
-            // 순수 텍스트(영문)만 깔끔하게 출력
             tutorBubble.innerHTML = text;
 
-            // Garbage Collector 방지를 위한 전역 변수 바인딩
             const utterance = new SpeechSynthesisUtterance(text);
             window.activeUtterance = utterance;
-            utterance.volume = masterVolume;
+            utterance.volume = masterVolume; // 타입 변환된 masterVolume 적용
 
             const hasKoreanChars = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
             const targetLang = hasKoreanChars ? 'ko-KR' : 'en-US';
@@ -762,9 +570,6 @@
             if (!bestVoice) bestVoice = voices.find(v => v.lang.includes(targetLang));
             if (bestVoice) utterance.voice = bestVoice;
 
-            // [목소리 교체 피드백 반영]
-            // Xeno: 쾌활하고 장난꾸러기 여우 높은 톤 (KOR: 1.15, ENG: 1.35)
-            // Xena: 나긋나긋 차분하고 친근한 곰 낮은 톤 (KOR: 0.95, ENG: 1.05)
             if (targetLang === 'ko-KR') {
                 utterance.pitch = currentChar === 'xeno' ? 1.15 : 0.95;
                 utterance.rate = 1.05;
@@ -773,16 +578,10 @@
                 utterance.rate = 0.95;
             }
 
-            utterance.onend = () => {
-                stopSpeaking();
-            };
-            
-            utterance.onerror = () => {
-                stopSpeaking();
-            };
+            utterance.onend = () => stopSpeaking();
+            utterance.onerror = () => stopSpeaking();
 
-            // 딴딴한 립싱크 가드를 위한 예상 재생 시간 기반 Fallback 가동
-            const duration = (text.length * 100) + 1500; // 글자당 100ms + 마진 1.5초
+            const duration = (text.length * 100) + 1500;
             window.ttsFallbackTimeout = setTimeout(() => {
                 if (isTutorSpeaking) {
                     console.log("TTS Safety Fallback triggered to stop mouth.");
@@ -790,7 +589,6 @@
                 }
             }, duration);
 
-            window.lastSpeakStartTime = Date.now();
             speechSynthesis.speak(utterance);
         }
 
@@ -800,25 +598,12 @@
             renderer.stopSpeakingAnim();
             volSlider.disabled = false;
             window.activeUtterance = null;
-
-            // 음성인식 마이크를 TTS가 끝나면 자동으로 비프음 주고 녹음 시작
-            if (hasInitialized && appMode === 'chatbot') {
-                triggerAutomaticListening();
-            }
+            // [FIX] 자동 트리거(triggerAutomaticListening) 제거됨
         }
 
-        function triggerAutomaticListening() {
-            // 1. Play brief beep tone
-            playBriefBeep();
-
-            // 2. Start automatic speech recording
-            setTimeout(() => {
-                if (!isTutorSpeaking && !isRecording) {
-                    startAutomaticRecording();
-                }
-            }, 200);
-        }
-
+        /* =========================================================
+           [FIX] 독립적인 비프음 재생 (볼륨 0.12 고정)
+           ========================================================= */
         function playBriefBeep() {
             try {
                 const audioCtxClass = window.AudioContext || window.webkitAudioContext;
@@ -829,8 +614,8 @@
                 gain.connect(beepCtx.destination);
                 
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(1000, beepCtx.currentTime); // 1000 Hz
-                gain.gain.setValueAtTime(0.12, beepCtx.currentTime);
+                osc.frequency.setValueAtTime(1000, beepCtx.currentTime); 
+                gain.gain.setValueAtTime(0.12, beepCtx.currentTime); // 마스터 볼륨과 무관하게 독립 유지
                 gain.gain.exponentialRampToValueAtTime(0.01, beepCtx.currentTime + 0.12);
                 
                 osc.start();
@@ -841,7 +626,7 @@
         }
 
         /* =========================================================
-           4. 어플리케이션 모드 분기 및 API 키 제어 시스템
+           5. 어플리케이션 모드 분기 및 API 키 제어
            ========================================================= */
         function setAppMode(mode) {
             const btnResetKey = document.getElementById('btn-reset-key');
@@ -855,21 +640,13 @@
                     isQuizActive = false;
                     quizContainer.classList.add('hidden');
                     btnResetKey.classList.remove('hidden');
-                    
-                    if (hasInitialized) {
-                        speakText("AI mode activated! Let's study our textbook with Google Gemini.");
-                    }
+                    if (hasInitialized) speakText("AI mode activated! Let's study our textbook with Google Gemini.");
                 }
             } else {
                 appMode = 'chatbot';
                 btnResetKey.classList.add('hidden');
-                
-                if (hasInitialized) {
-                    // 챗봇 모드로 오면, 무작위 퀴즈 이전에 친근한 인사말부터 시작
-                    startGreetingFlow();
-                }
+                if (hasInitialized) startGreetingFlow();
             }
-
             updateModeButtonsUI();
         }
 
@@ -886,9 +663,6 @@
             }
         }
 
-        /* =========================================================
-           5. API 설정 모달 인터랙션 및 키 저장
-           ========================================================= */
         function showApiModal() {
             const modal = document.getElementById('api-modal');
             const modalCard = document.getElementById('api-modal-card');
@@ -910,9 +684,7 @@
             
             modalCard.classList.remove('scale-100');
             modalCard.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 150);
+            setTimeout(() => { modal.classList.add('hidden'); }, 150);
         }
 
         function cancelApiSetup() {
@@ -951,14 +723,11 @@
                 const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${testKey}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                
                 if (!res.ok) return false;
                 
                 const validModels = data.models.filter(m =>
-                    m.supportedGenerationMethods &&
-                    m.supportedGenerationMethods.includes("generateContent") &&
-                    m.name.includes("gemini") &&
-                    !m.name.includes("2.5")
+                    m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent") &&
+                    m.name.includes("gemini") && !m.name.includes("2.5")
                 );
 
                 if (validModels.length > 0) {
@@ -984,18 +753,15 @@
         }
 
         /* =========================================================
-           6. 캐릭터 설정값 이식 및 파스텔 말풍선 스타일 주입
+           6. 캐릭터 설정
            ========================================================= */
         function setCharacter(char) {
             if (currentChar === char && hasInitialized) return;
             currentChar = char;
 
-            // 캐릭터 변경 시 말하고 있던 이전 TTS 즉시 소거 및 볼륨 제어 원상복구
             if (isTutorSpeaking) {
                 if (window.activeUtterance) {
-                    window.activeUtterance.onstart = null;
-                    window.activeUtterance.onend = null;
-                    window.activeUtterance.onerror = null;
+                    window.activeUtterance.onstart = null; window.activeUtterance.onend = null; window.activeUtterance.onerror = null;
                 }
                 clearTimeout(window.ttsFallbackTimeout);
                 speechSynthesis.cancel();
@@ -1008,18 +774,14 @@
             document.getElementById('char-xeno').className = "flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-white rounded-xl transition";
             document.getElementById('char-xena').className = "flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-white rounded-xl transition";
 
-            // [아주 옅은 오렌지 & 아주 옅은 하늘색 말풍선 완벽 매칭]
             if (char === 'xeno') {
                 document.getElementById('char-xeno').className = "flex-1 py-3 text-sm font-black bg-orange-500 text-white rounded-xl shadow-sm transition";
                 tutorLabel.innerText = "XENO";
                 bubbleContainer.className = "p-10 md:p-12 rounded-[2.5rem] bg-[#fffcf5] border-0 flex flex-col justify-center min-h-[220px] transition-all duration-500 shadow-sm relative";
                 
                 if (hasInitialized) {
-                    if (appMode === 'chatbot') {
-                        startGreetingFlow();
-                    } else {
-                        speakText("Hello! I'm Xeno, your desert fox helper! Let's study our textbook together.");
-                    }
+                    if (appMode === 'chatbot') startGreetingFlow();
+                    else speakText("Hello! I'm Xeno, your desert fox helper! Let's study our textbook together.");
                 }
             } else {
                 document.getElementById('char-xena').className = "flex-1 py-3 text-sm font-black bg-blue-500 text-white rounded-xl shadow-sm transition";
@@ -1027,26 +789,21 @@
                 bubbleContainer.className = "p-10 md:p-12 rounded-[2.5rem] bg-[#f4faff] border-0 flex flex-col justify-center min-h-[220px] transition-all duration-500 shadow-sm relative";
                 
                 if (hasInitialized) {
-                    if (appMode === 'chatbot') {
-                        startGreetingFlow();
-                    } else {
-                        speakText("Hi! I'm Xena, your friendly bear helper. Ready to discover the secrets of Egypt?");
-                    }
+                    if (appMode === 'chatbot') startGreetingFlow();
+                    else speakText("Hi! I'm Xena, your friendly bear helper. Ready to discover the secrets of Egypt?");
                 }
             }
         }
 
         /* =========================================================
-           7. 10문항 로컬 객관식 퀴즈 렌더러 및 분석 시스템
+           7. 퀴즈 엔진
            ========================================================= */
         function startGreetingFlow() {
             appState = 'GREETING';
             clearTimeout(nudgeTimer);
-            
             const greetingMsg = currentChar === 'xeno'
                 ? "Hello adventurer! I am Xeno, your clever desert fox helper! How are you today?"
                 : "Hi friend! I am Xena, your friendly polar bear helper! How are you doing today?";
-            
             tutorBubble.innerHTML = greetingMsg;
             speakText(greetingMsg);
         }
@@ -1054,7 +811,7 @@
         function startQuizSession() {
             appState = 'QUIZ_PLAYING';
             isQuizActive = true;
-            activeQuizIndex = 0; // 0번부터 순차적으로 출제
+            activeQuizIndex = 0; 
             renderQuizQuestion(activeQuizIndex);
         }
 
@@ -1062,22 +819,17 @@
             const quiz = quizDatabase[index];
             const hasKorean = (activeEngine === 'ko-eng');
             
-            // 질문 한글 번역 노출 분기 지원
             const questionText = hasKorean 
                 ? `${quiz.q}<br><span class="text-slate-500 font-bold text-sm md:text-base mt-2.5 block">(${quiz.k})</span>`
                 : quiz.q;
 
-            // 튜터 버블에 질문 적용 및 발화 가동
             tutorBubble.innerHTML = questionText;
             speakText(`Question ${index + 1}. ` + quiz.q);
 
-            // 대안 옵션 단추 버튼 동적 생성
             quizContainer.innerHTML = "";
             quiz.options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = "w-full text-left px-5 py-3.5 bg-white/90 hover:bg-slate-100 rounded-xl font-bold text-xs md:text-sm text-slate-700 transition active:scale-[0.98] shadow-sm border border-slate-100 flex items-center gap-3";
-                
-                // 가독성이 한층 향상된 옵션 기호 마킹
                 btn.innerHTML = `<span class="bg-slate-800 text-white rounded-lg w-6 h-6 flex items-center justify-center font-black text-xs font-mono">${opt.key}</span> <span>${opt.text}</span>`;
                 btn.onclick = () => handleQuizAnswer(opt.key);
                 quizContainer.appendChild(btn);
@@ -1092,27 +844,21 @@
             const isCorrect = (selectedOption.toUpperCase() === quiz.correct);
             
             if (isCorrect) {
-                isQuizActive = false; // 중복 답변 차단 (정답 맞췄을 때만 비활성화)
-                
-                // 버튼 블록 일시 정지용 딤 클래스 추가
+                isQuizActive = false; 
                 Array.from(quizContainer.children).forEach(btn => {
-                    btn.disabled = true;
-                    btn.style.opacity = "0.5";
-                    btn.onclick = null;
+                    btn.disabled = true; btn.style.opacity = "0.5"; btn.onclick = null;
                 });
 
                 const praiseFeedback = `Correct! ${quiz.replyCorrect}`;
                 tutorBubble.innerHTML = praiseFeedback;
                 speakText(praiseFeedback);
 
-                // 5.5초 뒤 새로운 무작위 문제로 롤링 전환
                 setTimeout(() => {
                     if (appMode === 'chatbot' && appState === 'QUIZ_PLAYING') {
                         activeQuizIndex++;
                         if (activeQuizIndex < quizDatabase.length) {
                             renderQuizQuestion(activeQuizIndex);
                         } else {
-                            // 10문항 완성 축하 세션
                             const finishMsg = "Wow! You finished all 10 science quiz questions! You are an amazing science explorer! 🎉";
                             tutorBubble.innerHTML = finishMsg;
                             speakText(finishMsg);
@@ -1122,13 +868,9 @@
                     }
                 }, 5500);
             } else {
-                // 오답인 경우 - 트라이 어게인 꼬리질문 연출
                 const wrongFeedback = `Oh, that is incorrect. Try again! ${quiz.replyWrong}`;
                 tutorBubble.innerHTML = wrongFeedback;
                 speakText(wrongFeedback);
-                
-                // 버튼 상태 유지 및 클릭 허용 (다시 고를 수 있게)
-                // 립싱크 가드가 끝난 뒤에 다시 자동으로 마이크가 켜져서 음성 정답 대기함.
             }
         }
 
@@ -1139,13 +881,13 @@
                     const nudgeMsg = "Are you there? Would you like to play the science quiz game now? Say yes to start!";
                     tutorBubble.innerHTML = nudgeMsg;
                     speakText(nudgeMsg);
-                    appState = 'ASK_PLAY_QUIZ'; // 상태를 원복하여 yes/no 응답을 받을 수 있도록 조치
+                    appState = 'ASK_PLAY_QUIZ'; 
                 }
-            }, 30000); // 정확히 30초 대기
+            }, 30000); 
         }
 
         /* =========================================================
-           8. 수동 및 스마트 타이머 자동 제출형 STT 음성인식
+           8. [FIX] 수동 기반 STT 음성인식 토글 시스템 (말하기 / 제출)
            ========================================================= */
         function setSpeechEngine(engine) {
             activeEngine = engine;
@@ -1160,14 +902,8 @@
                 btnKoEng.className = "px-4 py-2.5 text-sm font-bold rounded-lg text-slate-400 hover:text-slate-700 transition-all";
             }
 
-            if (recognition) {
-                recognition.lang = (engine === 'ko-eng') ? 'ko-KR' : 'en-US';
-            }
-
-            // 퀴즈 상태인 경우 한글 번역 즉시 연동 반영
-            if (appMode === 'chatbot' && isQuizActive) {
-                renderQuizQuestion(activeQuizIndex);
-            }
+            if (recognition) recognition.lang = (engine === 'ko-eng') ? 'ko-KR' : 'en-US';
+            if (appMode === 'chatbot' && isQuizActive) renderQuizQuestion(activeQuizIndex);
         }
 
         function initSpeechRecognition() {
@@ -1178,7 +914,7 @@
             }
 
             recognition = new SpeechRecognition();
-            recognition.continuous = false; // 마이크 자동 트리거 단발 수집 최적화
+            recognition.continuous = false; 
             recognition.interimResults = true; 
 
             recognition.onstart = () => {
@@ -1187,16 +923,11 @@
             };
 
             recognition.onresult = (e) => {
-                let interim = '';
-                let final = '';
+                let interim = ''; let final = '';
                 for (let i = e.resultIndex; i < e.results.length; ++i) {
-                    if (e.results[i].isFinal) {
-                        final += e.results[i][0].transcript;
-                    } else {
-                        interim += e.results[i][0].transcript;
-                    }
+                    if (e.results[i].isFinal) final += e.results[i][0].transcript;
+                    else interim += e.results[i][0].transcript;
                 }
-                
                 const textToShow = final || interim;
                 if (textToShow) {
                     document.getElementById('user-text').innerText = textToShow;
@@ -1208,27 +939,35 @@
             recognition.onerror = (err) => {
                 console.warn("STT Error:", err);
                 if (err.error !== 'aborted') {
-                    document.getElementById('user-text').innerText = "Voice input error. Try again.";
+                    document.getElementById('user-text').innerText = "Voice input error. Please try again.";
                 }
             };
 
             recognition.onend = () => {
+                // 음성이 끊겨 자동으로 꺼지더라도 제출 로직으로 연결
                 if (isRecording) {
-                    clearTimeout(recordingTimeoutId);
-                    finishAutomaticRecording();
+                    finishManualRecording();
                 }
             };
         }
 
-        async function startAutomaticRecording() {
+        // [FIX] 수동 녹음 토글 컨트롤러
+        function toggleManualRecording() {
             if (!hasInitialized) return;
+            // 튜터가 말하는 동안 겹쳐서 녹음하는 것을 방지
+            if (isTutorSpeaking) return;
 
-            if (!recognition) {
-                initSpeechRecognition();
-                if (!recognition) return;
+            if (isRecording) {
+                finishManualRecording(); 
+            } else {
+                startManualRecording(); 
             }
+        }
 
-            if (isRecording) return; // 중복 레코딩 가드
+        async function startManualRecording() {
+            if (!recognition) initSpeechRecognition();
+            if (!recognition) return;
+            if (isRecording) return; 
 
             isRecording = true;
             window.lastRecognizedText = ""; 
@@ -1236,68 +975,69 @@
 
             try {
                 recognition.start();
+                playBriefBeep(); // 마이크 켜짐 알림음 재생
             } catch(e) {
-                console.warn("STT safety lock:", e);
+                console.warn("STT start error:", e);
             }
 
-            // 마이크 활성화 시 펄싱하는 "Speak!" 지시등 노출
-            document.getElementById('automatic-speak-indicator').classList.remove('hidden');
-
-            // 실시간 마이크 앰플리튜드 음량 바 노출
+            // UI 변경 ([말하기] -> [제출])
+            document.getElementById('speak-btn-text').innerText = "[제출] (Space)";
+            document.getElementById('speak-btn-icon').classList.add('animate-blink-record');
             document.getElementById('mic-gauge-container').classList.remove('hidden');
+            
             await startAudioLevelAnalyzer();
-
-            // 소리가 들어오지 않아도 4.5초 뒤 강제 완료 자동제출 수행
-            recordingTimeoutId = setTimeout(() => {
-                if (isRecording) {
-                    finishAutomaticRecording();
-                }
-            }, 4500);
         }
 
-        function finishAutomaticRecording() {
+        function finishManualRecording() {
+            if (!isRecording) return;
             isRecording = false;
+
             try {
                 recognition.stop(); 
             } catch(e) {
-                console.warn("STT release fail:", e);
+                console.warn("STT stop fail:", e);
             }
 
-            stopAutomaticRecordingUI();
-
-            // 최종 음성 분석을 위한 350ms 딜레이 후 결과 라우팅
-            setTimeout(() => {
-                const finalInput = window.lastRecognizedText ? window.lastRecognizedText.trim() : "";
-                handleSpeechResult(finalInput);
-            }, 350);
-        }
-
-        function stopAutomaticRecordingUI() {
-            isRecording = false;
-            document.getElementById('automatic-speak-indicator').classList.add('hidden');
+            // UI 원상복구 ([제출] -> [말하기])
+            document.getElementById('speak-btn-text').innerText = "[말하기] (Space)";
+            document.getElementById('speak-btn-icon').classList.remove('animate-blink-record');
             document.getElementById('mic-gauge-container').classList.add('hidden');
+            
             const gaugeFill = document.getElementById('mic-gauge-fill');
             if (gaugeFill) gaugeFill.style.width = '0%';
-
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
             }
+
+            // 제출 시 약간의 딜레이 후 결과 전송
+            setTimeout(() => {
+                const finalInput = window.lastRecognizedText ? window.lastRecognizedText.trim() : "";
+                handleSpeechResult(finalInput);
+            }, 300);
         }
+
+        // [FIX] 스페이스바로 [말하기]/[제출] 토글 제어 이벤트 리스너
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                // 사용자가 텍스트 인풋(API 키 등)을 입력 중일 때는 무시
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+                
+                e.preventDefault(); // 스페이스바로 화면 내려가는 현상 방지
+                
+                // 모달창이 열려있지 않을 때만 단축키 작동
+                if (hasInitialized && !document.getElementById('api-modal').classList.contains('scale-100')) {
+                    toggleManualRecording();
+                }
+            }
+        });
 
         async function startAudioLevelAnalyzer() {
             try {
-                if (!micStream) {
-                    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                }
-                
+                if (!micStream) micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!audioCtx) {
-                    audioCtx = new AudioContext();
-                }
-                if (audioCtx.state === 'suspended') {
-                    await audioCtx.resume();
-                }
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
 
                 if (!analyser) {
                     analyser = audioCtx.createAnalyser();
@@ -1312,31 +1052,22 @@
 
                 const updateMeter = () => {
                     if (!isRecording) return; 
-
                     analyser.getByteFrequencyData(dataArray);
                     let sum = 0;
-                    for (let i = 0; i < bufferLength; i++) {
-                        sum += dataArray[i];
-                    }
+                    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
                     const average = sum / bufferLength;
                     const percentage = Math.min(100, Math.round((average / 80) * 100));
-                    if (gaugeFill) {
-                        gaugeFill.style.width = percentage + '%';
-                    }
-
+                    if (gaugeFill) gaugeFill.style.width = percentage + '%';
                     animationFrameId = requestAnimationFrame(updateMeter);
                 };
-                
                 updateMeter();
-
             } catch (err) {
                 console.warn("Hardware Mic analyser lock error:", err);
-                document.getElementById('user-text').innerText = "Please enable microphone permission in your browser.";
             }
         }
 
         /* =========================================================
-           9. 실시간 AI 및 지능형 챗봇 분기 핸들러
+           9. 챗봇 트리 및 AI 통신
            ========================================================= */
         async function handleSpeechResult(userInput) {
             const cleanInput = userInput ? userInput.trim() : "";
@@ -1353,87 +1084,66 @@
                 if (cleanInput) {
                     await fetchGeminiResponse(cleanInput);
                 } else {
-                    speakText("I couldn't hear you clearly. Please say it again!");
+                    speakText("I couldn't hear you clearly. Please press Speak to try again!");
                 }
                 return;
             }
 
-            // 챗봇 수동 반응 트리
             if (appState === 'GREETING') {
-                // 인사 대답을 수신 완료 -> 퀴즈 풀래? 로 전환
                 appState = 'ASK_PLAY_QUIZ';
                 setTimeout(() => {
                     const askMsg = "Nice! Do you want to play an exciting science quiz game now? Just say yes or no!";
-                    tutorBubble.innerHTML = askMsg;
-                    speakText(askMsg);
+                    tutorBubble.innerHTML = askMsg; speakText(askMsg);
                 }, 500);
-                
             } else if (appState === 'ASK_PLAY_QUIZ') {
                 const text = cleanInput.toLowerCase();
                 const isYes = text.includes("yes") || text.includes("sure") || text.includes("ok") || text.includes("좋") || text.includes("응") || text.includes("그래") || text.includes("하겠") || text.includes("start") || text.includes("play") || text.includes("yep");
                 const isNo = text.includes("no") || text.includes("not") || text.includes("싫") || text.includes("안") || text.includes("나중에") || text.includes("아니");
                 
                 if (isYes) {
-                    setTimeout(() => {
-                        startQuizSession();
-                    }, 500);
+                    setTimeout(() => startQuizSession(), 500);
                 } else if (isNo || !cleanInput) {
                     appState = 'QUIZ_DECLINED_IDLE';
                     setTimeout(() => {
                         const declineMsg = "No problem! I will wait here. If you want to play a quiz later, let me know!";
-                        tutorBubble.innerHTML = declineMsg;
-                        speakText(declineMsg);
+                        tutorBubble.innerHTML = declineMsg; speakText(declineMsg);
                         startIdle30sNudge();
                     }, 500);
                 } else {
                     setTimeout(() => {
                         const retryAskMsg = "I didn't quite get that. Would you like to play the science quiz? Say yes or no!";
-                        tutorBubble.innerHTML = retryAskMsg;
-                        speakText(retryAskMsg);
+                        tutorBubble.innerHTML = retryAskMsg; speakText(retryAskMsg);
                     }, 500);
                 }
-                
             } else if (appState === 'QUIZ_PLAYING') {
                 if (isQuizActive) {
                     const quiz = quizDatabase[activeQuizIndex];
                     let answeredKey = null;
                     const text = cleanInput.toUpperCase();
                     
-                    if (text.includes("A") || text.includes("에이") || text.includes("일번") || text.includes("1번")) {
-                        answeredKey = "A";
-                    } else if (text.includes("B") || text.includes("비") || text.includes("이번") || text.includes("2번")) {
-                        answeredKey = "B";
-                    } else if (text.includes("C") || text.includes("씨") || text.includes("삼번") || text.includes("3번")) {
-                        answeredKey = "C";
-                    } else {
-                        // 키가 직접 발화 텍스트에 포함되었는지 옵션별 대조 분석
+                    if (text.includes("A") || text.includes("에이") || text.includes("일번") || text.includes("1번")) answeredKey = "A";
+                    else if (text.includes("B") || text.includes("비") || text.includes("이번") || text.includes("2번")) answeredKey = "B";
+                    else if (text.includes("C") || text.includes("씨") || text.includes("삼번") || text.includes("3번")) answeredKey = "C";
+                    else {
                         quiz.options.forEach(opt => {
-                            if (text.includes(opt.text.toUpperCase())) {
-                                answeredKey = opt.key;
-                            }
+                            if (text.includes(opt.text.toUpperCase())) answeredKey = opt.key;
                         });
                     }
                     
-                    if (answeredKey) {
-                        handleQuizAnswer(answeredKey);
-                    } else {
+                    if (answeredKey) handleQuizAnswer(answeredKey);
+                    else {
                         setTimeout(() => {
                             const errorReply = "Please say A, B, or C to choose your answer! Try again.";
-                            tutorBubble.innerHTML = errorReply;
-                            speakText(errorReply);
+                            tutorBubble.innerHTML = errorReply; speakText(errorReply);
                         }, 500);
                     }
                 }
             } else if (appState === 'QUIZ_DECLINED_IDLE') {
                 const text = cleanInput.toLowerCase();
                 if (text.includes("yes") || text.includes("quiz") || text.includes("play") || text.includes("좋") || text.includes("그래") || text.includes("시작") || text.includes("퀴즈")) {
-                    setTimeout(() => {
-                        startQuizSession();
-                    }, 500);
+                    setTimeout(() => startQuizSession(), 500);
                 } else {
-                    setTimeout(() => {
-                        generateLocalChatbotResponse(cleanInput);
-                    }, 400);
+                    setTimeout(() => generateLocalChatbotResponse(cleanInput), 400);
                 }
             }
         }
@@ -1444,21 +1154,14 @@
             const isXeno = currentChar === 'xeno';
 
             if (clean.includes("안녕") || clean.includes("hello") || clean.includes("hi")) {
-                responseText = isXeno 
-                    ? "Hello! Nice to meet you. I am Xeno, your smart science buddy!"
-                    : "Hi there! I'm Xena, your polar bear tutor. Welcome!";
+                responseText = isXeno ? "Hello! Nice to meet you. I am Xeno, your smart science buddy!" : "Hi there! I'm Xena, your polar bear tutor. Welcome!";
             } else if (clean.includes("이름") || clean.includes("name") || clean.includes("누구")) {
-                responseText = isXeno 
-                    ? "My name is Xeno, the clever desert fox tutor!"
-                    : "I am Xena, your sweet polar bear tutor at AX LAB English.";
+                responseText = isXeno ? "My name is Xeno, the clever desert fox tutor!" : "I am Xena, your sweet polar bear tutor at AX LAB English.";
             } else if (clean.includes("피라미드") || clean.includes("pyramid") || clean.includes("과학") || clean.includes("science")) {
                 responseText = "Egypt is a big and hot country. Let's learn the secrets of moving big stones together!";
             } else {
-                responseText = isXeno
-                    ? `Interesting! You said: "${input}". Let's speak in English next time!`
-                    : `Lovely voice! I heard: "${input}". Shall we study together?`;
+                responseText = isXeno ? `Interesting! You said: "${input}". Let's speak in English next time!` : `Lovely voice! I heard: "${input}". Shall we study together?`;
             }
-
             speakText(responseText);
         }
 
@@ -1476,9 +1179,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         "contents": [{
-                            "parts": [{
-                                "text": `You are ${charName}, an English AI tutor at AX LAB English for 3rd-grade kids. Keep your answer extremely short (maximum 1 or 2 simple sentences). User said: ${input}`
-                            }]
+                            "parts": [{ "text": `You are ${charName}, an English AI tutor at AX LAB English for 3rd-grade kids. Keep your answer extremely short (maximum 1 or 2 simple sentences). User said: ${input}` }]
                         }]
                     })
                 });
@@ -1497,7 +1198,7 @@
         }
 
         /* =========================================================
-           10. 어플리케이션 이니셜라이즈 구동부
+           10. 어플리케이션 구동
            ========================================================= */
         function initAppOnInteraction() {
             if (hasInitialized) return;
@@ -1506,12 +1207,10 @@
 
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 micStream = stream;
-                console.log("Mic hardware streaming warm-up complete.");
             }).catch(e => {
                 console.warn("User mic ignored or permissions blocked:", e);
             });
 
-            // 챗봇 모드일 때 첫 인사말 발화 진행
             setTimeout(() => {
                 if (appMode === 'chatbot') {
                     startGreetingFlow();
@@ -1527,11 +1226,9 @@
         window.onload = () => {
             renderer.init();
             
-            // 로컬 스토리지에 기저장된 Gemini API 키가 존재할 시, 자동 연결 테스트 실행
             if (apiKey) {
                 testGeminiConnection(apiKey).then(connected => {
                     if (connected) {
-                        console.log("Successfully connected using stored Gemini Key.");
                         setAppMode('ai');
                     } else {
                         setAppMode('chatbot');
@@ -1541,11 +1238,8 @@
                 setAppMode('chatbot');
             }
 
-            // 캐릭터 기본 구성 선택 (제노)
             setCharacter('xeno');
-            // 음성인식 언어 기본값 Kor+Eng 설정
             setSpeechEngine('ko-eng');
-            // 음성인식 인프라 warm-up
             initSpeechRecognition();
         };
     </script>
